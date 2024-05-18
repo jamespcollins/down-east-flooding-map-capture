@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
     <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <style>
         * {margin: 0; padding: 0;}
 
@@ -84,6 +85,7 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>    
 
     <script>
         var map = L.map('map').setView([34.80158464213949, -76.66000448289184], 10);
@@ -245,6 +247,30 @@
             // return exportList();
             return "Are you sure you want to leave this page?";
         };
+
+        var geocode_layers = [];
+
+        // Add the geocoder control
+        var geocoder = L.Control.geocoder({
+            defaultMarkGeocode: false,
+            geocode: function(query, cb, context) {
+                var modifiedQuery = query + " Carteret County, North Carolina, USA";
+                L.Control.Geocoder.nominatim().geocode(modifiedQuery, cb, context);
+            }
+        }).on('markgeocode', function(e) {
+            geocode_layers.forEach((l) => {l.remove()});
+            var bbox = e.geocode.bbox;
+            var poly = L.polygon([
+                bbox.getSouthEast(),
+                bbox.getNorthEast(),
+                bbox.getNorthWest(),
+                bbox.getSouthWest()
+            ]).addTo(map);
+            // map.panTo(poly.getCenter());
+            map.fitBounds(poly.getBounds());
+            map.setZoom(map.getZoom() - 1);
+            geocode_layers.push(poly);
+        }).addTo(map);
     </script>
 </body>
 </html>
