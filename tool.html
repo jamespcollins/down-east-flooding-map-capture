@@ -163,7 +163,9 @@
             }
         });
 
-        map.on('draw:deleted', function () {
+        map.on('draw:editstop', function () {
+            updateLabelsTable();
+        }).on('draw:deletestop', function () {
             updateLabelsTable();
         });
 
