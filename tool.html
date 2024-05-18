@@ -45,12 +45,12 @@
 <body>
     <div id="map"></div>
     <div id="controls">
-        <button id="export-btn">Export markers</button>
+        <button id="export-btn">Export places</button>
         <table id="labels-table">
             <thead>
                 <tr>
-                    <th>Markers</th>
-                    <th>Follow Up</th>
+                    <th>Place</th>
+                    <th>Done</th>
                 </tr>
             </thead>
             <tbody>
@@ -178,10 +178,10 @@
                 tableBody.appendChild(row);
 
                 row.addEventListener('click', function() {
-                    map.setView(item.layer.getLatLng(), 14);
+                    map.setView(item.layer.getLatLng(), 13);
                     item.layer.openTooltip();
-                    item.layer.setStyle(clickStyle);
-                    item.layer.feature.properties.clicked = true;
+                    // item.layer.setStyle(clickStyle);
+                    // item.layer.feature.properties.clicked = true;
                     updateLabelsTable();
                 });
             });
