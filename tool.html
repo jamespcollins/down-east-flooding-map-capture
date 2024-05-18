@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        var MARKER_DIAMETER_METERS = 250;
+        var REPEAT_MODE = false;
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Down East flooding map locations</title>
@@ -104,7 +108,7 @@
                     shapeOptions: {
                         color: 'red'
                     },
-                    repeatMode: true
+                    repeatMode: REPEAT_MODE
                 },
                 marker: false,
                 circlemarker: false
@@ -159,7 +163,7 @@
                 layer.setStyle(unclickStyle);
                 drawnItems.addLayer(layer);
                 updateLabelsTable();
-                layer.setRadius(500);
+                layer.setRadius(MARKER_DIAMETER_METERS);
             }
         });
 
