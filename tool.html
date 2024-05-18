@@ -6,6 +6,7 @@
     <title>Down East flooding map locations</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
     <style>
         * {margin: 0; padding: 0;}
 
@@ -28,10 +29,16 @@
         #export-btn {
             margin: 10px;
             padding: 5px 10px;
-            background-color: #337ab7;
             color: white;
             border: none;
+        }
+        #export-btn.enabled {
+            background-color: #337ab7;
             cursor: pointer;
+        }
+        #export-btn.disabled {
+            background-color: #aaa;
+            cursor: default;
         }
         #labels-table {
             width: 100%;
@@ -57,7 +64,7 @@
 <body>
     <div id="map"></div>
     <div id="controls">
-        <button id="export-btn">Export places</button>
+        <button id="export-btn" class="disabled" disabled="disabled">Export places</button>
         <table id="labels-table">
             <thead>
                 <tr>
@@ -72,6 +79,7 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
 
     <script>
         var map = L.map('map').setView([34.80158464213949, -76.66000448289184], 10);
@@ -197,6 +205,19 @@
                     updateLabelsTable();
                 });
             });
+
+            // Update the counter on the export button
+            if (labels.length > 0) {
+                var button = document.getElementById('export-btn');
+                button.textContent = `Export ${labels.length} places`;
+                button.classList = "enabled";
+                button.disabled = false;
+            } else {
+                var button = document.getElementById('export-btn');
+                button.textContent = `Export places`;
+                button.classList = "disabled";
+                button.disabled = true;
+            }
         }
 
         function exportList() {
