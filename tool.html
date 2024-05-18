@@ -7,8 +7,18 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
     <style>
+        * {margin: 0; padding: 0;}
+
         #map {
-            height: 90vh;
+            height: 100vh;
+            width: 70vw;
+            float: left;
+        }
+        #controls {
+            font-family: "Aptos", sans-serif;
+            width: 28vw;
+            float: right;
+            padding: 1vw;
         }
         #export-btn {
             margin: 10px;
@@ -18,18 +28,33 @@
             border: none;
             cursor: pointer;
         }
-        .hover-menu {
-            position: absolute;
-            background: white;
-            padding: 5px;
+        #labels-table {
+            width: 100%;
+            border-collapse: collapse;
+            cursor: pointer;
+        }
+        #labels-table th, #labels-table td {
             border: 1px solid #ccc;
-            display: none;
+            padding: 8px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     <div id="map"></div>
-    <button id="export-btn">Export markers</button>
+    <div id="controls">
+        <button id="export-btn">Export markers</button>
+        <table id="labels-table">
+            <thead>
+                <tr>
+                    <th>Markers</th>
+                    <th>Follow Up</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
@@ -65,22 +90,7 @@
         });
         map.addControl(drawControl);
 
-        map.on(L.Draw.Event.CREATED, function (e) {
-            var type = e.layerType,
-                layer = e.layer;
-
-            if (type === 'circle') {
-                // Fix the radius to 1600 meters
-                layer.setRadius(500);
-            }
-
-            // Add the layer to the FeatureGroup
-            drawnItems.addLayer(layer);
-        });
-
-
         var clickStyle =  {
-            // radius: 10,
             fillColor: "#00ff00",
             color: "#00ff00",
             weight: 3,
@@ -89,7 +99,6 @@
         }
 
         var unclickStyle = {
-            // radius: 10,
             fillColor: "#ff0000",
             color: "#ff0000",
             weight: 3,
@@ -105,6 +114,7 @@
                 e.target.setStyle(clickStyle);
                 e.target.feature.properties.clicked = true;
             }
+            updateLabelsTable();
         }
 
         var label_counter = 1;
@@ -124,10 +134,56 @@
                     }
                 };
                 layer.on('click', clickOnMarker);
-                layer.setStyle(unclickStyle)
+                layer.setStyle(unclickStyle);
+                drawnItems.addLayer(layer);
+                updateLabelsTable();
+                layer.setRadius(500);
             }
-            drawnItems.addLayer(layer);
         });
+
+        map.on('draw:deleted', function () {
+            updateLabelsTable();
+        });
+
+        function updateLabelsTable() {
+            var labels = [];
+            drawnItems.eachLayer(function (layer) {
+                if (layer.feature && layer.feature.properties.label) {
+                    labels.push({
+                        label: layer.feature.properties.label,
+                        layer: layer
+                    });
+                }
+            });
+
+            labels.sort((a, b) => a.label.localeCompare(b.label));
+
+            var tableBody = document.querySelector('#labels-table tbody');
+            tableBody.innerHTML = '';
+
+            labels.forEach(function (item) {
+                var row = document.createElement('tr');
+                var labelCell = document.createElement('td');
+                labelCell.textContent = item.label;
+                var checkboxCell = document.createElement('td');
+                var checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = item.layer.feature.properties.clicked;
+                checkbox.disabled = true; // Make the checkbox read-only
+                checkboxCell.appendChild(checkbox);
+                row.appendChild(labelCell);
+                row.appendChild(checkboxCell);
+                tableBody.appendChild(row);
+
+                row.addEventListener('click', function() {
+                    map.setView(item.layer.getLatLng(), 14);
+                    item.layer.openTooltip();
+                    item.layer.setStyle(clickStyle);
+                    item.layer.feature.properties.clicked = true;
+                    updateLabelsTable();
+                });
+            });
+        }
 
         document.getElementById('export-btn').addEventListener('click', function() {
             var data = drawnItems.toGeoJSON();
