@@ -30,6 +30,7 @@
             padding-bottom: 1vh;
             height: 98vh;
             overflow-y: scroll;
+            background-color: rgb(254, 254, 254);
         }
         #export-btn {
             margin: 10px;
@@ -64,12 +65,17 @@
         #labels-table tr {
             border-bottom: 1px solid #444;
         }
+        #help {
+            color:rgb(2, 133, 199);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <div id="controls">
         <button id="export-btn" class="disabled" disabled="disabled">Export places</button>
+        <small id="help">Help...</small>
         <table id="labels-table">
             <thead>
                 <tr>
@@ -85,7 +91,8 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>    
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="mousetrap.js"></script>    
 
     <script>
         var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -100,20 +107,33 @@
             // attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
         });
 
+        var USGS_USImageryTopo = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 20,
+            attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
+        });
+
+        var defaultView = {
+            center: [34.80158464213949, -76.66000448289184],
+            zoom: 10
+        };
+
         var map = L.map('map',{
-            center: [34.80158464213949, -76.66000448289184], 
-            zoom: 10,
+            center: defaultView.center,
+            zoom: defaultView.zoom,
             layers: [Esri_WorldTopoMap]
         });
         map.setMinZoom(10);
+        map.attributionControl.remove();
 
         var baseMaps = {
-            "OpenStreetMap": osm,
             "ESRI Topo": Esri_WorldTopoMap,
-            "ESRI Imagery": Esri_WorldImagery
+            "ESRI Imagery": Esri_WorldImagery,
+            "OpenStreetMap": osm,
+            "USGS Hybrid": USGS_USImageryTopo
         };
 
-        var layerControl = L.control.layers(baseMaps).addTo(map);
+        var layerControl = L.control.layers(baseMaps)
+        layerControl.options.position = "bottomright";
 
         var drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
@@ -173,7 +193,10 @@
                 var label = prompt('Enter label for the marker:');
                 label = label_counter.toString() + ": " + label;
                 label_counter++;
-                layer.bindTooltip(label, { permanent: true }).openTooltip();
+                layer.bindTooltip(label, { 
+                    permanent: true,
+                    direction: 'top'
+                }).openTooltip();
                 layer.feature = {
                     type: 'Feature',
                     properties: {
@@ -226,7 +249,7 @@
                 tableBody.appendChild(row);
 
                 row.addEventListener('click', function() {
-                    map.setView(item.layer.getLatLng(), 13);
+                    map.setView(item.layer.getLatLng(), 14);
                     item.layer.openTooltip();
                     // item.layer.setStyle(clickStyle);
                     // item.layer.feature.properties.clicked = true;
@@ -249,13 +272,27 @@
         }
 
         function exportList() {
+            if (drawnItems.getLayers().length == 0) {return false}
+
+            var ready = true;
+            drawnItems.getLayers().forEach((l) => {
+                if(!l.feature.properties.clicked){
+                    ready = false;
+                }
+            });
+            if (!ready) {
+                alert("There are still unverified places!");
+                return false;
+            }
+
             var data = drawnItems.toGeoJSON();
             var blob = new Blob([JSON.stringify(data)], {type: "application/json"});
             var url = URL.createObjectURL(blob);
 
+            var respondent = prompt("Respondent ID");
             var a = document.createElement('a');
             a.href = url;
-            a.download = 'markers.geojson';
+            a.download = 'markers_'+respondent+'.geojson';
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -273,12 +310,15 @@
         // Add the geocoder control
         var geocoder = L.Control.geocoder({
             defaultMarkGeocode: false,
-            geocode: function(query, cb, context) {
-                var modifiedQuery = query + " Carteret County, North Carolina, USA";
-                L.Control.Geocoder.nominatim().geocode(modifiedQuery, cb, context);
-            }
+            geocoder: new L.Control.Geocoder.nominatim({
+                geocodingQueryParams: {
+                    viewbox: '-76,35,-77,34',
+                    bounded: 1
+                }
+            }),
+            collapsed: false
         }).on('markgeocode', function(e) {
-            geocode_layers.forEach((l) => {l.remove()});
+            _removeGeocodeLayers();
             var bbox = e.geocode.bbox;
             var poly = L.polygon([
                 bbox.getSouthEast(),
@@ -291,6 +331,76 @@
             map.setZoom(map.getZoom() - 1);
             geocode_layers.push(poly);
         }).addTo(map);
+
+        function _removeGeocodeLayers() {
+            geocode_layers.forEach((l) => {l.remove()});
+        }
+
+        layerControl.addTo(map);
+
+        function _toDefaultView() {
+            map.setView(defaultView.center, defaultView.zoom);
+        }
+
+        // Custom control to reset map view
+        var resetControl = L.Control.extend({
+            options: {
+                position: 'topleft'
+            },
+
+            onAdd: function(map) {
+                var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+                container.style.backgroundColor = 'white';     
+                container.style.width = '30px';
+                container.style.height = '30px';
+                container.style.cursor = 'pointer';
+                container.style.textAlign = 'center';
+                container.style.lineHeight = '30px';
+                container.style.fontSize = '1.7em';
+                container.title = 'Reset map view';
+                container.innerHTML = '&#x21bb;'; // Reset icon (you can customize this)
+
+                container.onclick = function() {
+                    _toDefaultView();
+                };
+
+                return container;
+            }
+        });
+
+        map.addControl(new resetControl());
+
+        // Hotkeys
+        Mousetrap.bind(['r'], function(e) {
+            _toDefaultView();
+            return false;
+        });
+
+        Mousetrap.bind(['g'], function(e) {
+            geocoder.getContainer().getElementsByTagName("input")[0].focus()
+            return false;
+        });
+
+        Mousetrap.bind(['c'], function(e) {
+            document.getElementsByClassName("leaflet-draw-draw-circle")[0].click()
+            return false;
+        });
+
+        Mousetrap.bind(['e'], function(e) {
+            exportList();
+            return false;
+        });
+
+        Mousetrap.bind(['esc'], function(e) {
+            _toDefaultView();
+            _removeGeocodeLayers();
+            return false;
+        });
+
+        // Help
+        document.getElementById("help").onclick = function () {
+            alert("Always export before reloading! \n[c] Place new circle \n[r] Reset map view \n[g] Focus on geocoder \n[e] Export geodata");
+        }
     </script>
 </body>
 </html>
