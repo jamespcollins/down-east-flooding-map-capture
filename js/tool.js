@@ -15,8 +15,17 @@ var USGS_USImageryTopo = L.tileLayer('https://basemap.nationalmap.gov/arcgis/res
     attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
 });
 
+var county = L.geoJSON(carteret_co,{
+    style: {
+        "color": "#ff7800",
+        "weight": 3,
+        "opacity": 0.65,
+        "fillOpacity": 0
+    }
+})
+
 var defaultView = {
-    center: [34.80158464213949, -76.66000448289184],
+    center: county.getBounds().getCenter(),
     zoom: 10
 };
 
@@ -25,8 +34,11 @@ var map = L.map('map',{
     zoom: defaultView.zoom,
     layers: [Esri_WorldTopoMap]
 });
-map.setMinZoom(10);
+map.fitBounds(county.getBounds());
+// map.setMinZoom(map.getZoom());
 map.attributionControl.remove();
+
+county.addTo(map);
 
 var baseMaps = {
     "ESRI Topo": Esri_WorldTopoMap,
