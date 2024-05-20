@@ -114,9 +114,6 @@ map.on('draw:created', function (e) {
 
 modal.on('show.bs.modal', function (e) {
     document.getElementById("circleLabel").value = "";
-    $('#labelForm input[type="checkbox"]').each((i, e) => {
-        e.checked = false;
-    });
 });
 
 modal.on('shown.bs.modal', function (e) {
@@ -130,10 +127,6 @@ modal.on('hidden.bs.modal', function () {
 $('#labelForm').on('submit', function (event) {
     event.preventDefault();
     var label = document.getElementById("circleLabel").value;
-    var options = [];
-    if (document.getElementById("optionA").checked) options.push("A");
-    if (document.getElementById("optionB").checked) options.push("B");
-    if (document.getElementById("optionC").checked) options.push("C");
 
     currentLayer.bindTooltip(idCounter.toString() + ": " + label, { 
         permanent: true,
@@ -144,7 +137,6 @@ $('#labelForm').on('submit', function (event) {
         properties: {
             id: idCounter,
             label: label,
-            options: options,
             clicked: false
         }
     };
@@ -161,21 +153,13 @@ function openEditModal(layer) {
 
     // Populate modal with existing properties
     document.getElementById('circleLabel').value = layer.feature.properties.label;
-    document.getElementById('optionA').checked = layer.feature.properties.options.includes('A');
-    document.getElementById('optionB').checked = layer.feature.properties.options.includes('B');
-    document.getElementById('optionC').checked = layer.feature.properties.options.includes('C');
 
     // Save changes to the layer when the form is submitted
     $('#labelForm').off('submit').on('submit', function(event) {
         event.preventDefault();
         var label = document.getElementById('circleLabel').value;
-        var options = [];
-        if (document.getElementById('optionA').checked) options.push('A');
-        if (document.getElementById('optionB').checked) options.push('B');
-        if (document.getElementById('optionC').checked) options.push('C');
 
         layer.feature.properties.label = label;
-        layer.feature.properties.options = options;
         layer.setTooltipContent(label);
         modal.modal('hide');
         updateLabelsTable();
@@ -196,7 +180,6 @@ function updateLabelsTable() {
         if (layer.feature && layer.feature.properties.label) {
             labels.push({
                 label: layer.feature.properties.label,
-                options: layer.feature.properties.options,
                 layer: layer
             });
         }
@@ -223,9 +206,6 @@ function updateLabelsTable() {
             item.layer.openTooltip();
         });
         labelCell.appendChild(labelLink);
-
-        var optionsCell = document.createElement('td');
-        optionsCell.textContent = item.options.join(", ");
 
         var checkboxCell = document.createElement('td');
         var checkbox = document.createElement('input');
@@ -262,7 +242,6 @@ function updateLabelsTable() {
 
         row.appendChild(idCell);
         row.appendChild(labelCell);
-        row.appendChild(optionsCell);
         row.appendChild(checkboxCell);
         row.appendChild(editCell);
         row.appendChild(deleteCell);
