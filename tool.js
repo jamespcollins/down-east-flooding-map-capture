@@ -141,7 +141,8 @@ $('#labelForm').on('submit', function (event) {
         properties: {
             id: idCounter,
             label: label,
-            clicked: false
+            clicked: false,
+            order: drawnItems.getLayers().length
         }
     };
     currentLayer.on('click', clickOnMarker);
@@ -186,16 +187,21 @@ function updateLabelsTable() {
         if (layer.feature && layer.feature.properties.label) {
             labels.push({
                 label: layer.feature.properties.label,
-                layer: layer
+                layer: layer,
+                order: layer.feature.properties.order
             });
         }
     });
+
+    // Sort labels by order
+    labels.sort((a, b) => (a.order || 0) - (b.order || 0));
 
     var tableBody = document.querySelector('#labels-table tbody');
     tableBody.innerHTML = '';
 
     labels.forEach(function (item) {
         var row = document.createElement('tr');
+        row.setAttribute('data-id', item.label);
 
         var idCell = document.createElement('td');
         idCell.textContent = item.layer.feature.properties.id;
@@ -229,8 +235,9 @@ function updateLabelsTable() {
 
         var editCell = document.createElement('td');
         var editIcon = document.createElement('span');
-        editIcon.classList = 'edit-icon';
-        editIcon.innerHTML = '✏️';
+        editIcon.className = 'edit-icon';
+        editIcon.textContent = '✏️';
+        editIcon.style.cursor = 'pointer';
         editIcon.addEventListener('click', function() {
             openEditModal(item.layer);
         });
@@ -238,8 +245,9 @@ function updateLabelsTable() {
 
         var deleteCell = document.createElement('td');
         var deleteIcon = document.createElement('span');
-        deleteIcon.classList = 'delete-icon';
-        deleteIcon.innerHTML = '🗑️';
+        deleteIcon.className = 'delete-icon';
+        deleteIcon.textContent = '🗑️';
+        deleteIcon.style.cursor = 'pointer';
         deleteIcon.addEventListener('click', function() {
             drawnItems.removeLayer(item.layer);
             updateLabelsTable();
@@ -251,6 +259,7 @@ function updateLabelsTable() {
         row.appendChild(checkboxCell);
         row.appendChild(editCell);
         row.appendChild(deleteCell);
+
         tableBody.appendChild(row);
     });
 
@@ -267,6 +276,7 @@ function updateLabelsTable() {
         button.disabled = true;
     }
 }
+
 
 
 // Export handling
@@ -352,7 +362,7 @@ var resetControl = L.Control.extend({
         container.style.height = '30px';
         container.style.cursor = 'pointer';
         container.style.textAlign = 'center';
-        container.style.lineHeight = '30px';
+        container.style.lineHeight = '24px';
         container.style.fontSize = '1.7em';
         container.title = 'Reset map view';
         container.innerHTML = '&#x21bb;'; // Reset icon (you can customize this)

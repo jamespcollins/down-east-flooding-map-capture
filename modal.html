@@ -62,12 +62,17 @@
         }
         #labels-table th {
             border: none;
+            cursor: default;
         }
         #labels-table td {
             border: none;
         }
         #labels-table tr {
             border-bottom: 1px solid #444;
+            cursor: ns-resize;
+        }
+        #labels-table input[type="checkbox"] {
+            cursor: pointer;
         }
         #help {
             color:rgb(2, 133, 199);
@@ -85,7 +90,7 @@
                 <tr>
                     <th><!--id--></th>
                     <th>Place</th>
-                    <th>Done</th>
+                    <th><!--done--></th>
                     <th><!--edit--></th>
                     <th><!--delete--></th>
                 </tr>
@@ -155,8 +160,28 @@
     <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <script src="mousetrap.js"></script>    
 
     <script src="tool.js"></script>
+
+    <script>
+        var sortable = new Sortable(document.querySelector('#labels-table tbody'), {
+            animation: 150,
+            onEnd: function (/**Event*/evt) {
+                var order = sortable.toArray();
+                updateFeatureOrder(order);
+            }
+        });
+
+        function updateFeatureOrder(order) {
+            drawnItems.eachLayer(function (layer) {
+                if (layer.feature && layer.feature.properties) {
+                    layer.feature.properties.order = order.indexOf(layer.feature.properties.label);
+                }
+            });
+            updateLabelsTable();  // Refresh the table to reflect the new order
+        }
+    </script>
 </body>
 </html>
