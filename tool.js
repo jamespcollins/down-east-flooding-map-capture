@@ -101,6 +101,7 @@ map.on('draw:created', function (e) {
 
 // Modal handling
 var modal = $('#labelModal');
+var modalEdit = $('#labelModalEdit');
 var currentLayer = null;
 
 map.on('draw:created', function (e) {
@@ -118,6 +119,9 @@ modal.on('show.bs.modal', function (e) {
 
 modal.on('shown.bs.modal', function (e) {
     $("#circleLabel").focus();
+});
+modalEdit.on('shown.bs.modal', function (e) {
+    $("#circleLabelEdit").focus();
 });
 
 modal.on('hidden.bs.modal', function () {
@@ -149,23 +153,25 @@ $('#labelForm').on('submit', function (event) {
 });
 
 function openEditModal(layer) {
-    modal.modal('show');
+    modalEdit.modal('show');
 
     // Populate modal with existing properties
-    document.getElementById('circleLabel').value = layer.feature.properties.label;
+    document.getElementById('circleLabelEdit').value = layer.feature.properties.label;
+
+    // Remove any existing event listeners to avoid duplicates
+    $('#labelFormEdit').off('submit');
 
     // Save changes to the layer when the form is submitted
-    $('#labelForm').off('submit').on('submit', function(event) {
+    $('#labelFormEdit').on('submit', function(event) {
         event.preventDefault();
-        var label = document.getElementById('circleLabel').value;
+        var label = document.getElementById('circleLabelEdit').value;
 
         layer.feature.properties.label = label;
-        layer.setTooltipContent(label);
-        modal.modal('hide');
+        layer.setTooltipContent(layer.feature.properties.id + ": " + label);
+        modalEdit.modal('hide');
         updateLabelsTable();
     });
 }
-
 
 // Table handling
 map.on('draw:editstop', function () {
