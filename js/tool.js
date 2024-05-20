@@ -25,8 +25,9 @@ var county = L.geoJSON(carteret_co,{
 })
 
 var defaultView = {
-    center: county.getBounds().getCenter(),
-    zoom: 10
+    // center: county.getBounds().getCenter(),
+    center: [34.80675621590259, -76.5376809057703],
+    zoom: 11
 };
 
 var map = L.map('map',{
@@ -34,7 +35,7 @@ var map = L.map('map',{
     zoom: defaultView.zoom,
     layers: [Esri_WorldTopoMap]
 });
-map.fitBounds(county.getBounds());
+// map.fitBounds(county.getBounds());
 // map.setMinZoom(map.getZoom());
 map.attributionControl.remove();
 
