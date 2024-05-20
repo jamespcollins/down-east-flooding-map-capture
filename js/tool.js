@@ -388,7 +388,7 @@ var resetControl = L.Control.extend({
     }
 });
 
-map.addControl(new resetControl());
+// map.addControl(new resetControl());
 
 // Hotkeys
 Mousetrap.bind(['r'], function(e) {
