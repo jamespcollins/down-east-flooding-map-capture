@@ -38,6 +38,7 @@ var map = L.map('map',{
 // map.fitBounds(county.getBounds());
 // map.setMinZoom(map.getZoom());
 map.attributionControl.remove();
+map.zoomControl.remove()
 
 county.addTo(map);
 
