@@ -332,7 +332,7 @@ var geocode_layers = [];
 
 var geocoder = L.Control.geocoder({
     defaultMarkGeocode: false,
-    geocoder: new L.Control.Geocoder.nominatim({
+    geocoder: new L.Control.Geocoder.arcgis({
         geocodingQueryParams: {
             viewbox: '-76,35,-77,34',
             bounded: 1
@@ -420,5 +420,5 @@ Mousetrap.bind(['esc'], function(e) {
 
 // Help
 document.getElementById("help").onclick = function () {
-    alert("Always export before reloading! \n[c] Place new circle \n[r] Reset map view \n[g] Focus on geocoder \n[e] Export geodata");
+    alert("Always save before reloading! \n[c] Place new circle \n[g] Focus on geocoder \n[e] Export geodata \n[r or esc] Reset map view");
 }
