@@ -332,7 +332,7 @@ var geocode_layers = [];
 
 var geocoder = L.Control.geocoder({
     defaultMarkGeocode: false,
-    geocoder: new L.Control.Geocoder.arcgis({
+    geocoder: new L.Control.Geocoder.nominatim({
         geocodingQueryParams: {
             viewbox: '-76,35,-77,34',
             bounded: 1
