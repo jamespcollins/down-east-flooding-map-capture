@@ -138,12 +138,12 @@ googleStreets.on('seedend',(e)=>{
 
 googleStreets.on('tilecachemiss',(e)=>{
     // console.log(`cache miss`);
-    $('#cache-bar').addClass('bg-warning').removeClass('bg-success bg-danger')[0].innerHTML = `Cache missing`;
+    $('#cache-bar').addClass('bg-success').removeClass('bg-danger').css('opacity',0.8)[0].innerHTML = `Cache missing`;
 });
 
 googleStreets.on('tilecachehit',(e)=>{
     if (remainingToCache <= 1) {
-        $('#cache-bar').removeClass('bg-danger bg-warning').addClass('bg-success')[0].innerHTML = `Cached`;
+        $('#cache-bar').removeClass('bg-danger bg-warning').addClass('bg-success').css('opacity',1)[0].innerHTML = `Cached`;
     } else {
         // could not finish caching!
         $('#cache-bar').removeClass('bg-success bg-warning').addClass('bg-danger').css('width','100%').attr('aria-valuenow',100)[0].innerHTML = `Check connection ⏤ failed to finish caching! (${remainingToCache} to go)`
