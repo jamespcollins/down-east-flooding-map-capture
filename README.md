@@ -6,7 +6,6 @@
 
 ## Requests
 
-- add caching indicator
 - add place generator questions
 - look into selecting tools
 
@@ -26,6 +25,7 @@
 
 # Implemented
 
+- add caching indicator
 - add category display to table... filter questions based on this
     - need to allow multiple categories
 - add lines
