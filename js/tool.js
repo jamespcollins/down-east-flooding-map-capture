@@ -530,6 +530,7 @@ var geocoder = L.Control.geocoder({
             bounded: 1
         }
     }),
+    position: 'bottomright',
     collapsed: true
 }).on('markgeocode', function(e) {
     _removeGeocodeLayers();
