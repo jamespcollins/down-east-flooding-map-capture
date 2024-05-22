@@ -16,7 +16,10 @@ var respID = $.urlParam("r");
 // https://gis.stackexchange.com/a/341490
 googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
     maxZoom: 20,
-    subdomains:['mt0','mt1','mt2','mt3']
+    subdomains:['mt0','mt1','mt2','mt3'],
+    useCache: true,
+    useOnlyCache: true,
+	crossOrigin: true
 });
 googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
     maxZoom: 20,
@@ -68,6 +71,9 @@ var map = L.map('map',{
 // map.setMinZoom(map.getZoom());
 map.attributionControl.remove();
 map.zoomControl.remove()
+
+// seed cache
+// googleStreets.seed(map.getBounds(),10,16)
 
 county.addTo(map);
 

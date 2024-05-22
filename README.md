@@ -4,7 +4,7 @@
 
 # Roadmap
 
-- use better geocoder (Google?)
+- use better geocoder (Google?) -- https://chatgpt.com/share/6ed3205c-5910-4888-8cdd-067caa797da4
 - add uncertainty flag
 - add basemap caching
 - add matrix to web app place interpretation
@@ -12,6 +12,7 @@
 	- ipad sidecar…
 
 ## Bugs
+
 - need to prevent table sort when filtering to flooding only
 
 # Implemented
