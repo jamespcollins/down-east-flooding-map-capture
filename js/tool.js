@@ -1,7 +1,17 @@
 // Utils
+$.urlParam = function(name){
+    var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+    if (results==null) {
+       return null;
+    }
+    return decodeURI(results[1]) || 0;
+}
+
 function _oSize(o) {
     return(Object.keys(o).length);
 }
+
+var respID = $.urlParam("r");
 
 // https://gis.stackexchange.com/a/341490
 googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
@@ -319,7 +329,7 @@ function updateLabelsTable() {
 
 
 // Export handling
-function exportList() {
+function exportList(verify) {
     if (drawnItems.getLayers().length == 0) {return false}
 
     var ready = true;
@@ -328,7 +338,7 @@ function exportList() {
             ready = false;
         }
     });
-    if (!ready) {
+    if (!ready && verify) {
         alert("There are still unverified places!");
         return false;
     }
@@ -337,16 +347,21 @@ function exportList() {
     var blob = new Blob([JSON.stringify(data)], {type: "application/json"});
     var url = URL.createObjectURL(blob);
 
-    var respondent = prompt("Respondent ID");
+    if (!respID) {
+        respID = prompt("Respondent ID");
+    }
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'markers_'+respondent+'.geojson';
+    a.download = 'markers_'+respID+'.geojson';
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
 }
 
-document.getElementById('export-btn').addEventListener('click', exportList);
+$('#export-btn').click((e) => {
+    // do not verify
+    exportList(false);
+});
 
 window.onbeforeunload = function() {
     return "Are you sure you want to leave this page?";
@@ -390,6 +405,8 @@ function _toDefaultView() {
     map.setView(defaultView.center, defaultView.zoom);
 }
 
+
+
 // Custom control to reset map view
 var resetControl = L.Control.extend({
     options: {
@@ -418,9 +435,12 @@ var resetControl = L.Control.extend({
 
 // map.addControl(new resetControl());
 
+
+
 // Hotkeys
-Mousetrap.bind(['r'], function(e) {
+Mousetrap.bind(['r','esc'], function(e) {
     _toDefaultView();
+    _removeGeocodeLayers();
     return false;
 });
 
@@ -429,7 +449,7 @@ Mousetrap.bind(['g'], function(e) {
     return false;
 });
 
-Mousetrap.bind(['c'], function(e) {
+Mousetrap.bind(['c','n'], function(e) {
     document.getElementsByClassName("leaflet-draw-draw-circle")[0].click()
     return false;
 });
@@ -439,11 +459,7 @@ Mousetrap.bind(['e'], function(e) {
     return false;
 });
 
-Mousetrap.bind(['esc'], function(e) {
-    _toDefaultView();
-    _removeGeocodeLayers();
-    return false;
-});
+
 
 // Help
 $("#help").click((e) => {
