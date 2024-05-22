@@ -530,7 +530,7 @@ var geocoder = L.Control.geocoder({
             bounded: 1
         }
     }),
-    collapsed: false
+    collapsed: true
 }).on('markgeocode', function(e) {
     _removeGeocodeLayers();
     var bbox = e.geocode.bbox;
@@ -667,7 +667,7 @@ function _step2View() {
     $('.s2-narrow').animate({'width':'20vw'},350);
     $('.s2-wide').animate({'width':'80vw'}, 400);
     $('.s2-show').css('color','rgb(33, 37, 41)');
-    geocoder.options.collapsed = true;
+    // geocoder.options.collapsed = true;
     geocoder.remove().addTo(map);
     setTimeout(function(){ 
         map.invalidateSize();
