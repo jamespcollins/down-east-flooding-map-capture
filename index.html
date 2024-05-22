@@ -25,28 +25,32 @@
             width: 70vw;
             float: left;
         }
-        #controls {
+        #controls-container {
             width: 30vw;
             float: right;
             padding-left: 1vw;
             padding-right: 1vw;
             padding-top: 1vh;
-            padding-bottom: 1vh;
-            height: 98vh;
+            padding-bottom: 100px;
+            height: 100vh;
             overflow-y: scroll;
             background-color: rgb(254, 254, 254);
+            position: relative;
         }
-        #export-btn {
+        #controls {
+            /* nothing */
+        }
+        button {
             margin: 10px;
             padding: 5px 10px;
             color: white;
             border: none;
         }
-        #export-btn.enabled {
+        button.enabled {
             background-color: #337ab7;
             cursor: pointer;
         }
-        #export-btn.disabled {
+        button.disabled {
             background-color: #aaa;
             cursor: default;
         }
@@ -55,7 +59,10 @@
             border-collapse: collapse;
             cursor: pointer;
         }
-        #labels-table th, #labels-table td {
+        #labels-table th {
+            border-top: none;
+        }
+        /* #labels-table th, #labels-table td {
             border: 1px solid #ccc;
             padding: 6px;
             text-align: left;
@@ -70,34 +77,59 @@
         #labels-table tr {
             border-bottom: 1px solid #444;
             cursor: ns-resize;
+        } */
+        #labels-table tr {
+            cursor: ns-resize;
         }
         #labels-table input[type="checkbox"] {
             cursor: pointer;
         }
-        #help {
+        #help, a {
             color:rgb(2, 133, 199);
             cursor: pointer;
+        }
+        .sticky-footer {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 30vw;
+            background-color: #f8f9fa;
+            padding: 10px;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    <div id="controls">
-        <button id="export-btn" class="disabled" disabled="disabled">Export places</button>
-        <b id="help">&#9432;</b>
-        <table id="labels-table">
-            <thead>
-                <tr>
-                    <th><!--id--></th>
-                    <th>Place</th>
-                    <th><!--done--></th>
-                    <th><!--edit--></th>
-                    <th><!--delete--></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+    <div id="map" class="s2-narrow"></div>
+    <div id="controls-container" class="s2-wide">
+        <div id="controls">
+            <table id="labels-table" class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th><!--id--></th>
+                        <th>Place</th>
+                        <th><!--done--></th>
+                        <th><!--delete--></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div class="sticky-footer s2-wide">
+            <div class="row">
+                <div class="col text-left">
+                    <button id="prev-step-btn" class="button enabled" hidden>&#8249; Previous</button>
+                </div>
+                <div class="col text-center" style="vertical-align: middle;">
+                    <button id="help" class="bg-transparent">&#9432;</button>
+                </div>
+                <div class="col text-right">
+                    <button id="next-step-btn" class="button disabled min-one-place-btn" disabled="disabled">Next &#8250;</button>
+                    <button id="export-btn" class="button disabled min-one-place-btn" disabled="disabled" hidden>Export places ↓</button>  
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modal for circle label input -->
@@ -201,23 +233,29 @@
     </div>
 
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+    <script
+        src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+        crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
-    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <!-- <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script> -->
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="js/mousetrap.js"></script>    
     <script src="js/carteret_co.js"></script>
     <script src="js/tool.js"></script>
 
     <script>
         var sortable = new Sortable(document.querySelector('#labels-table tbody'), {
+            // dataIdAttr: "data-id",
             animation: 150,
-            onEnd: function (/**Event*/evt) {
+            onEnd: function (e) {
                 var order = sortable.toArray();
+                console.log(order)
                 updateFeatureOrder(order);
             }
         });
@@ -225,7 +263,7 @@
         function updateFeatureOrder(order) {
             drawnItems.eachLayer(function (layer) {
                 if (layer.feature && layer.feature.properties) {
-                    layer.feature.properties.order = order.indexOf(layer.feature.properties.label);
+                    layer.feature.properties.order = order.indexOf(layer.feature.properties.id.toString());
                 }
             });
             updateLabelsTable();  // Refresh the table to reflect the new order

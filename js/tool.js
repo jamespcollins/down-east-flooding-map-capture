@@ -1,3 +1,17 @@
+// https://gis.stackexchange.com/a/341490
+googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
+    maxZoom: 20,
+    subdomains:['mt0','mt1','mt2','mt3']
+});
+googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
+    maxZoom: 20,
+    subdomains:['mt0','mt1','mt2','mt3']
+});
+googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+    maxZoom: 20,
+    subdomains:['mt0','mt1','mt2','mt3']
+});
+
 var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     // maxZoom: 18,
 });
@@ -33,7 +47,7 @@ var defaultView = {
 var map = L.map('map',{
     center: defaultView.center,
     zoom: defaultView.zoom,
-    layers: [Esri_WorldTopoMap]
+    layers: [googleStreets]
 });
 // map.fitBounds(county.getBounds());
 // map.setMinZoom(map.getZoom());
@@ -43,6 +57,9 @@ map.zoomControl.remove()
 county.addTo(map);
 
 var baseMaps = {
+    "Google Streets": googleStreets,
+    "Google Hybrid": googleHybrid,
+    "Google Imagery": googleSat,
     "ESRI Topo": Esri_WorldTopoMap,
     "ESRI Imagery": Esri_WorldImagery,
     "OpenStreetMap": osm,
@@ -200,6 +217,7 @@ function updateLabelsTable() {
     drawnItems.eachLayer(function (layer) {
         if (layer.feature && layer.feature.properties.label) {
             labels.push({
+                id: layer.feature.properties.id,
                 label: layer.feature.properties.label,
                 layer: layer,
                 order: layer.feature.properties.order
@@ -215,17 +233,17 @@ function updateLabelsTable() {
 
     labels.forEach(function (item) {
         var row = document.createElement('tr');
-        row.setAttribute('data-id', item.label);
+        row.setAttribute('data-id', item.id);
 
         var idCell = document.createElement('td');
-        idCell.textContent = item.layer.feature.properties.id;
+        idCell.textContent = item.id;
 
         var labelCell = document.createElement('td');
         var labelLink = document.createElement('a');
         labelLink.href = "#";
         labelLink.textContent = item.label;
-        labelLink.style.color = "#337ab7";
-        labelLink.style.textDecoration = "underline";
+        // labelLink.style.color = "#337ab7";
+        // labelLink.style.textDecoration = "underline";
         labelLink.addEventListener('click', function(event) {
             event.preventDefault();
             map.setView(item.layer.getLatLng(), 14);
@@ -250,14 +268,14 @@ function updateLabelsTable() {
         var editCell = document.createElement('td');
         var editIcon = document.createElement('span');
         editIcon.className = 'edit-icon';
-        editIcon.textContent = '✏️';
+        editIcon.textContent = '✏️ ';
         editIcon.style.cursor = 'pointer';
         editIcon.addEventListener('click', function() {
             openEditModal(item.layer);
         });
         editCell.appendChild(editIcon);
 
-        var deleteCell = document.createElement('td');
+        // var deleteCell = document.createElement('td');
         var deleteIcon = document.createElement('span');
         deleteIcon.className = 'delete-icon';
         deleteIcon.textContent = '🗑️';
@@ -266,28 +284,24 @@ function updateLabelsTable() {
             drawnItems.removeLayer(item.layer);
             updateLabelsTable();
         });
-        deleteCell.appendChild(deleteIcon);
+        editCell.appendChild(deleteIcon);
 
         row.appendChild(idCell);
         row.appendChild(labelCell);
         row.appendChild(checkboxCell);
         row.appendChild(editCell);
-        row.appendChild(deleteCell);
 
         tableBody.appendChild(row);
     });
 
     // Update the counter on the export button
     if (labels.length > 0) {
-        var button = document.getElementById('export-btn');
-        button.textContent = `Export ${labels.length} places`;
-        button.classList = "enabled";
-        button.disabled = false;
+        $('#export-btn').textContent = `Export ${labels.length} places`;
+        $('.min-one-place-btn').addClass('enabled').removeClass("disabled").removeAttr("disabled");
     } else {
-        var button = document.getElementById('export-btn');
-        button.textContent = `Export places`;
-        button.classList = "disabled";
-        button.disabled = true;
+        _step1View();
+        $('#export-btn').textContent = `Export places`;
+        $('.min-one-place-btn').removeClass('enabled').addClass("disabled").attr("disabled","disabled");
     }
 }
 
@@ -419,6 +433,69 @@ Mousetrap.bind(['esc'], function(e) {
 });
 
 // Help
-document.getElementById("help").onclick = function () {
-    $('#helpModal').show();
+$("#help").click((e) => {
+    $('#helpModal').modal('show');
+});
+
+// Next step handler
+var stepView = 1;
+
+$('#prev-step-btn').click((e) => {
+    _step1View();
+});
+
+$('#next-step-btn').click((e) => {
+    _step2View();
+});
+
+function _step1View() {
+    if (stepView == 1) {return false}
+    $('.s2-wide').animate({'width':'30vw'}, 350);
+    $('.s2-narrow').animate({'width':'70vw'},400);
+    geocoder.options.collapsed = false;
+    geocoder.remove().addTo(map);
+    setTimeout(function(){ 
+        map.invalidateSize();
+        $('#prev-step-btn, #export-btn').attr('hidden','hidden');
+        $('#next-step-btn').removeAttr('hidden');
+    }, 400);
+    updateLabelsTable();
+    stepView = 1;
+}
+
+function _step2View() {
+    if (stepView == 2) {return false}
+    $('.s2-narrow').animate({'width':'20vw'},350);
+    $('.s2-wide').animate({'width':'80vw'}, 400);
+    geocoder.options.collapsed = true;
+    geocoder.remove().addTo(map);
+    setTimeout(function(){ 
+        map.invalidateSize();
+        $('#prev-step-btn, #export-btn').removeAttr('hidden');
+        $('#next-step-btn').attr('hidden','hidden');
+    }, 400);
+    updateLabelsTable();
+    stepView = 2;
+}
+
+// $("#next-step-btn").removeAttr("disabled")
+
+
+// Place descriptor handlers
+var placeDescriptorIndex = 1;
+var placeDescriptors = {
+    1: "In the last year, how often did you see flooding at each place?",
+    2: "How does flooding at each place disrupt your day-to-day life, if at all?",
+    3: "How do you deal with flooding at each place?",
+    4: "If you imagine flooding that's severe enough that you can't rely on each place...",
+    5: "How deep would the water be?",
+    6: "What fraction of the area would be covered by water?",
+    7: "How frequent would the flooding be?",
+    8: "If each place is too severely flooded, how long are you willing to travel to a comparable place?",
+    9: "If your usual route to each place is too severely flooded, how long are you willing to travel on an alternate route?",
+    10: "What would you do without each place?"
+};
+
+for (i in Object.keys(placeDescriptors)) {
+    console.log(i)
 }
