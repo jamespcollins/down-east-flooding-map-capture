@@ -6,7 +6,6 @@
 
 - use better geocoder (Google?) -- https://chatgpt.com/share/6ed3205c-5910-4888-8cdd-067caa797da4
 - add uncertainty flag
-- add basemap caching
 - add matrix to web app place interpretation
 - apple pencil drawing…?
 	- ipad sidecar…
@@ -17,5 +16,6 @@
 
 # Implemented
 
-- use better basemap (Google)
+- add basemap caching 0b470b1b1d3ce8b1d74c65932ee9ed82f856b2bd
+- use better basemap (Google) a4f280d9e9765829671e7282a20591bafc46ede8
 
