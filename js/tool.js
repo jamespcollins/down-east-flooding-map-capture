@@ -97,13 +97,19 @@ layerControl.options.position = "bottomright";
 // Tile cache
 var totalToCache = 0;
 var remainingToCache = 0;
+var initialCache = false;
+
 googleStreets.on('seedstart',(e)=>{
-    map.fitBounds(county.getBounds());
     totalToCache = e.queueLength;
-    map.dragging.disable();
-    map.scrollWheelZoom.disable();
+
+    if (initialCache) {
+        map.fitBounds(county.getBounds());
+        map.dragging.disable();
+        map.scrollWheelZoom.disable();
+        map._container.style.opacity = 0.5;
+    }
+    
     console.log(`caching tiles at zoom level ${cache} with queue length ${e.queueLength}...`);
-    map._container.style.opacity = 0.5;
 });
 
 googleStreets.on('seedprogress',(e)=>{
@@ -114,13 +120,18 @@ googleStreets.on('seedprogress',(e)=>{
 
 googleStreets.on('seedend',(e)=>{
     console.log(`finished seeding cache.`);
+
     map.dragging.enable();
     map.scrollWheelZoom.enable();
+
+    if (initialCache) {
+        setTimeout(function(){ 
+            _toDefaultView();
+        }, 400);
+    }
+    
     $('#cache-bar').removeClass('bg-danger bg-warning').addClass('bg-success').css('width','100%').attr('aria-valuenow',100)[0].innerHTML = `Cached`
     map._container.style.opacity = 1;
-    setTimeout(function(){ 
-        _toDefaultView();
-    }, 400);
 });
 
 googleStreets.on('tilecachemiss',(e)=>{
@@ -138,6 +149,7 @@ googleStreets.on('tilecachehit',(e)=>{
 });
 
 if (cache > 0) {
+    initialCache = true;
     googleStreets.seed(county.getBounds(),10, cache);
 }
 
@@ -585,6 +597,11 @@ Mousetrap.bind(['l'], function(e) {
 
 Mousetrap.bind(['e'], function(e) {
     exportList();
+    return false;
+});
+
+Mousetrap.bind(['t'], function(e) {
+    googleStreets.seed(map.getBounds(),10, 15);
     return false;
 });
 
