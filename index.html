@@ -28,6 +28,7 @@
                         <th><!--id--></th>
                         <th><!--shape--></th>
                         <th>Place</th>
+                        <th>Categories</th>
                         <th class="s2-show">Flooding</th>
                         <th><!--delete--></th>
                     </tr>
@@ -53,7 +54,7 @@
         </div>
     </div>
 
-    <!-- Modal for circle label input -->
+    <!-- Modal for marker input -->
     <div id="labelModal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -69,6 +70,7 @@
                             <!-- <label for="circleLabel">Label</label> -->
                             <input type="text" class="form-control" id="circleLabel" name="circleLabel" required>
                         </div>
+                        <div class="form-group place-categories place-categories-initial"></div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -95,6 +97,7 @@
                             <!-- <label for="circleLabel">Label</label> -->
                             <input type="text" class="form-control" id="circleLabelEdit" name="circleLabel" required>
                         </div>
+                        <div class="form-group place-categories place-categories-edit"></div>
                     </form>
                 </div>
                 <div class="modal-footer">

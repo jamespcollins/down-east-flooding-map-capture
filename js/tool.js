@@ -205,11 +205,24 @@ modalEdit.on('shown.bs.modal', function (e) {
 modal.on('hidden.bs.modal', function () {
     currentLayer = null; // Reset the current layer when the modal is hidden
     currentLayerType = null;
+    _clearCategoryCheckboxes()
+});
+
+modalEdit.on('hidden.bs.modal', function () {
+    _clearCategoryCheckboxes()
 });
 
 $('#labelForm').on('submit', function (event) {
     event.preventDefault();
     var label = document.getElementById("circleLabel").value;
+    var categories = [];
+
+    $.each(placeCategories, (i,o) => {
+        cb = $('#check-' + o.tag + '-initial')[0];
+        if (cb.checked) {
+            categories.push(o.tag);
+        }
+    });
 
     currentLayer.bindTooltip(idCounter.toString() + ": " + label, { 
         permanent: true,
@@ -222,7 +235,8 @@ $('#labelForm').on('submit', function (event) {
             label: label,
             clicked: false,
             order: drawnItems.getLayers().length,
-            type: currentLayerType
+            type: currentLayerType,
+            categories: categories
         }
     };
     currentLayer.on('click', clickOnMarker);
@@ -241,6 +255,10 @@ function openEditModal(layer) {
     // Populate modal with existing properties
     document.getElementById('circleLabelEdit').value = layer.feature.properties.label;
 
+    layer.feature.properties.categories.forEach((o) =>{
+        $('#check-' + o + '-edit')[0].checked = true;
+    });
+
     // Remove any existing event listeners to avoid duplicates
     $('#labelFormEdit').off('submit');
 
@@ -248,8 +266,17 @@ function openEditModal(layer) {
     $('#labelFormEdit').on('submit', function(event) {
         event.preventDefault();
         var label = document.getElementById('circleLabelEdit').value;
+        var categories = [];
+
+        $.each(placeCategories, (i,o) => {
+            cb = $('#check-' + o.tag + "-edit")[0];
+            if (cb.checked) {
+                categories.push(o.tag);
+            }
+        });
 
         layer.feature.properties.label = label;
+        layer.feature.properties.categories = categories;
         layer.setTooltipContent(layer.feature.properties.id + ": " + label);
         modalEdit.modal('hide');
         updateLabelsTable();
@@ -275,6 +302,7 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
                 layer: layer,
                 order: layer.feature.properties.order,
                 type: layer.feature.properties.type,
+                categories: layer.feature.properties.categories
             });
         }
     });
@@ -291,26 +319,24 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
             return(false);
         }
 
-        console.log(item.type);
-        console.log(featureTypes);
-
         // check layer type
         if (featureTypes && !(featureTypes.includes(item.type))) {
-            console.log('filtered')
             return(false);
         }
 
         var row = document.createElement('tr');
         row.setAttribute('data-id', item.id);
 
+        // ID
         var idCell = document.createElement('td');
         idCell.textContent = item.id;
 
+        // Shape
         var shapeCell = document.createElement('td');
         if (item.type === 'circle')     {shapeCell.innerHTML = '&#9711;'}
         if (item.type === 'polyline')   {shapeCell.textContent = '⏤'}
         
-
+        // Label
         var labelCell = document.createElement('td');
         var labelLink = document.createElement('a');
         labelLink.href = "#";
@@ -321,10 +347,22 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
             event.preventDefault();
             if (item.type === 'circle')     {map.setView(item.layer.getLatLng(), 14)}
             if (item.type === 'polyline')   {map.fitBounds(item.layer.getBounds(), 14)}
-            // item.layer.openTooltip();
         });
         labelCell.appendChild(labelLink);
 
+        // Categories
+        var categoriesCell = document.createElement('td');
+        noCats = item.categories.length;
+        catCt = 1;
+        cats = '';
+        item.categories.forEach((o) => {
+            cats += placeCategoriesLookUp[o];
+            if (catCt < noCats) {cats += ', '}
+            catCt++;
+        });
+        categoriesCell.innerHTML = cats;
+
+        // Flooding checkbox
         var checkboxCell = document.createElement('td');
         var checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -341,6 +379,7 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
             checkboxCell.appendChild(checkbox);
         }
 
+        // Edit
         var editCell = document.createElement('td');
         var editIcon = document.createElement('span');
         editIcon.className = 'edit-icon';
@@ -365,6 +404,7 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
         row.appendChild(idCell);
         row.appendChild(shapeCell);
         row.appendChild(labelCell);
+        row.appendChild(categoriesCell);
         row.appendChild(checkboxCell);
         row.appendChild(editCell);
 
@@ -693,3 +733,68 @@ var placeDescriptors = {
         featureTypes: ['polyline']
     }
 };
+
+
+
+// Category handling
+var placeCategories = {
+    1: {
+        tag: "residence",
+        label: "Primary residence"
+    },
+    2: {
+        tag: "property",
+        label: "Other property"
+    },
+    3: {
+        tag: "work",
+        label: "Work or occupation"
+    },
+    4: {
+        tag: "street",
+        label: "Local street"
+    },
+    5: {
+        tag: "majorroad",
+        label: "Major road or bridge"
+    },
+    6: {
+        tag: "goodssvcs",
+        label: "Groceries and services"
+    },
+    7: {
+        tag: "relax",
+        label: "Relax by self"
+    },
+    8: {
+        tag: "connect",
+        label: "Connect with others"
+    },
+    9: {
+        tag: "other",
+        label: "Other property"
+    }
+}
+
+var placeCategoriesLookUp = {}
+
+$.each(placeCategories, (i,e) => {
+    placeCategoriesLookUp[e.tag] = e.label;
+    ['initial','edit'].forEach((o) => {
+        temp = `
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="check-${e.tag}-${o}">
+            <label class="form-check-label" for="check-${e.tag}-${o}">
+                ${e.label}
+            </label>
+        </div>`;
+        $input = $(temp);
+        $(`.place-categories-${o}`).append($input);
+    });
+});
+
+function _clearCategoryCheckboxes() {
+    $('.place-categories input').each((i,o) => {
+        o.checked = false;
+    });
+}

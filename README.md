@@ -4,19 +4,24 @@
 
 # Roadmap
 
+## Requests
+
 - add place generator questions
-- add category display to table... filter questions based on this
-    - need to allow multiple categories
 - look into selecting tools
 - add caching indicator
 
+## Improvements
+
+- add category display to table... filter questions based on this
+    - need to allow multiple categories
+- use jQuery for DOM element creation
 - use better geocoder (Google?) -- https://chatgpt.com/share/6ed3205c-5910-4888-8cdd-067caa797da4
 - add uncertainty flag
 - add matrix to web app place interpretation
 - apple pencil drawing…?
 	- ipad sidecar…
 
-## Bugs
+# Bugs
 
 - need to prevent table sort when filtered
 
