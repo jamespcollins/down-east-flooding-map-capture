@@ -4,6 +4,11 @@
 
 # Roadmap
 
+- add lines
+- add category display to table... filter questions based on this
+    - need to allow multiple categories
+- look into selecting tools
+
 - use better geocoder (Google?) -- https://chatgpt.com/share/6ed3205c-5910-4888-8cdd-067caa797da4
 - add uncertainty flag
 - add matrix to web app place interpretation
