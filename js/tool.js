@@ -504,7 +504,6 @@ function _step1View() {
     updateLabelsTable();
     placeDescriptorIndex = 1;   
 }
-$('.s2-show').css('color','transparent');
 
 function _step2View() {
     if (stepView == 2) {return false}
