@@ -462,6 +462,9 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
         $('#export-btn').textContent = `Export places`;
         $('.min-one-place-btn').removeClass('enabled').addClass("disabled").attr("disabled","disabled");
     }
+
+    // cache state locally
+    localStorage['down-east-flooding-cache-'+respID] = JSON.stringify(drawnItems.toGeoJSON());
 }
 
 
@@ -502,6 +505,7 @@ $('#export-btn').click((e) => {
 });
 
 window.onbeforeunload = function() {
+    localStorage['down-east-flooding-cache-'+respID] = JSON.stringify(drawnItems.toGeoJSON());
     return "Are you sure you want to leave this page?";
 };
 
