@@ -1,3 +1,8 @@
+// Utils
+function _oSize(o) {
+    return(Object.keys(o).length);
+}
+
 // https://gis.stackexchange.com/a/341490
 googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
     maxZoom: 20,
@@ -69,6 +74,8 @@ var baseMaps = {
 var layerControl = L.control.layers(baseMaps)
 layerControl.options.position = "bottomright";
 
+
+// Draw handling
 var drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
 
@@ -93,8 +100,8 @@ var drawControl = new L.Control.Draw({
 map.addControl(drawControl);
 
 var clickStyle =  {
-    fillColor: "#00ff00",
-    color: "#00ff00",
+    fillColor: "#337ab7",
+    color: "#337ab7",
     weight: 3,
     opacity: 1,
     fillOpacity: 0.2,
@@ -129,6 +136,8 @@ map.on('draw:created', function (e) {
         $('#labelModal').show() // Show the modal
     }
 });
+
+
 
 // Modal handling
 var modal = $('#labelModal');
@@ -204,6 +213,8 @@ function openEditModal(layer) {
         updateLabelsTable();
     });
 }
+
+
 
 // Table handling
 map.on('draw:editstop', function () {
@@ -341,6 +352,8 @@ window.onbeforeunload = function() {
     return "Are you sure you want to leave this page?";
 };
 
+
+
 // Geocoder control
 var geocode_layers = [];
 
@@ -437,15 +450,17 @@ $("#help").click((e) => {
     $('#helpModal').modal('show');
 });
 
-// Next step handler
+
+
+// Step handler
 var stepView = 1;
 
 $('#prev-step-btn').click((e) => {
-    _step1View();
+    _updatePrevStep();
 });
 
 $('#next-step-btn').click((e) => {
-    _step2View();
+    _updateNextStep();
 });
 
 function _step1View() {
@@ -454,12 +469,14 @@ function _step1View() {
     $('.s2-narrow').animate({'width':'70vw'},400);
     geocoder.options.collapsed = false;
     geocoder.remove().addTo(map);
+    _updatePlaceDescriptor();
     setTimeout(function(){ 
         map.invalidateSize();
         $('#prev-step-btn, #export-btn').attr('hidden','hidden');
         $('#next-step-btn').removeAttr('hidden');
     }, 400);
     updateLabelsTable();
+    placeDescriptorIndex = 1;
     stepView = 1;
 }
 
@@ -471,31 +488,76 @@ function _step2View() {
     geocoder.remove().addTo(map);
     setTimeout(function(){ 
         map.invalidateSize();
-        $('#prev-step-btn, #export-btn').removeAttr('hidden');
-        $('#next-step-btn').attr('hidden','hidden');
+        $('#prev-step-btn').removeAttr('hidden');
+        _updatePlaceDescriptor();
     }, 400);
     updateLabelsTable();
     stepView = 2;
 }
 
-// $("#next-step-btn").removeAttr("disabled")
+function _updatePlaceDescriptor() {
+    if (stepView == 2) {
+        $('#place-descriptors h1').text(placeDescriptors[placeDescriptorIndex]).css('margin-bottom','0.2em');
+        $('#place-descriptors small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
+    } else {
+        $('#place-descriptors h1, #place-descriptors small').text("").css('margin-bottom','0');
+    }
+}
+
+
+// Prev button handler
+function _updatePrevStep() {
+    if (placeDescriptorIndex == 1) {
+        // go to step 1 view
+        return(_step1View());
+    } else {
+        // decrement place descriptor
+        placeDescriptorIndex--;
+        _updatePlaceDescriptor();
+        $('#next-step-btn').removeAttr('hidden');
+        $('#export-btn').attr('hidden','hidden');
+    }
+}
+
+
+
+// Next button handler
+function _updateNextStep() {
+    if (stepView == 1) {
+        // go to step 2 view
+        placeDescriptorIndex = 1;
+        return(_step2View());
+    }
+    else if (_oSize(placeDescriptors) - 1 == placeDescriptorIndex) {
+        // export button show
+        placeDescriptorIndex++;
+        _updatePlaceDescriptor();
+        $('#export-btn').removeAttr('hidden');
+        $('#next-step-btn').attr('hidden','hidden');
+    } else {
+        // increment place descriptor
+        placeDescriptorIndex++;
+        _updatePlaceDescriptor();
+        $('#next-step-btn').removeAttr('hidden');
+        $('#export-btn').attr('hidden','hidden');
+    }
+}
+
 
 
 // Place descriptor handlers
 var placeDescriptorIndex = 1;
 var placeDescriptors = {
-    1: "In the last year, how often did you see flooding at each place?",
-    2: "How does flooding at each place disrupt your day-to-day life, if at all?",
-    3: "How do you deal with flooding at each place?",
-    4: "If you imagine flooding that's severe enough that you can't rely on each place...",
-    5: "How deep would the water be?",
-    6: "What fraction of the area would be covered by water?",
-    7: "How frequent would the flooding be?",
-    8: "If each place is too severely flooded, how long are you willing to travel to a comparable place?",
-    9: "If your usual route to each place is too severely flooded, how long are you willing to travel on an alternate route?",
-    10: "What would you do without each place?"
+    1: "At which of these places have you seen flooding?",
+    2: "Which of these places are most affected by flooding?",
+    3: "In the last year, how often did you see flooding at each place?",
+    4: "How does flooding at each place disrupt your day-to-day life, if at all?",
+    5: "How do you deal with flooding at each place?",
+    6: "If you imagine flooding that's severe enough that you can't rely on each place...",
+    7: "How deep would the water be?",
+    8: "What fraction of the area would be covered by water?",
+    9: "How frequent would the flooding be?",
+    10: "If each place is too severely flooded, how long are you willing to travel to a comparable place?",
+    11: "If your usual route to each place is too severely flooded, how long are you willing to travel on an alternate route?",
+    12: "What would you do without each place?"
 };
-
-for (i in Object.keys(placeDescriptors)) {
-    console.log(i)
-}
