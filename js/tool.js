@@ -471,6 +471,8 @@ Mousetrap.bind(['e'], function(e) {
 $("#help").click((e) => {
     $('#helpModal').modal('show');
 });
+// show on start
+$('#helpModal').modal('show');
 
 
 
