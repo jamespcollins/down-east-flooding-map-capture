@@ -65,7 +65,6 @@ var county = L.geoJSON(carteret_co,{
 })
 
 var defaultView = {
-    // center: county.getBounds().getCenter(),
     center: [34.80675621590259, -76.5376809057703],
     zoom: 11
 };
@@ -75,8 +74,6 @@ var map = L.map('map',{
     zoom: defaultView.zoom,
     layers: [googleStreets]
 });
-// map.fitBounds(county.getBounds());
-// map.setMinZoom(map.getZoom());
 map.attributionControl.remove();
 map.zoomControl.remove()
 
@@ -98,31 +95,51 @@ layerControl.options.position = "bottomright";
 
 
 // Tile cache
-if (cache) {
-    googleStreets.seed(map.getBounds(),10, 11); //16);
-}
-
-/////// NOT WORKING ///////
-
-// Listen for the remainingLength event
-googleStreets.on('remainingLength', function(event) {
-    var totalTiles = event.total;
-    var remainingTiles = event.remaining;
-
-    // Calculate the caching progress
-    var progress = ((totalTiles - remainingTiles) / totalTiles) * 100;
-
-    // Update your progress bar with the calculated progress
-    updateProgressBar(progress);
+var totalToCache = 0;
+var remainingToCache = 0;
+googleStreets.on('seedstart',(e)=>{
+    map.fitBounds(county.getBounds());
+    totalToCache = e.queueLength;
+    map.dragging.disable();
+    map.scrollWheelZoom.disable();
+    console.log(`caching tiles at zoom level ${cache} with queue length ${e.queueLength}...`);
+    map._container.style.opacity = 0.5;
 });
 
-function updateProgressBar(progress) {
-    // Update your progress bar with the calculated progress value
-    // You can use any progress bar library or custom implementation here
-    console.log('Caching progress: ' + progress + '%');
-}
+googleStreets.on('seedprogress',(e)=>{
+    remainingToCache = e.remainingLength;
+    perc = Math.round((totalToCache - remainingToCache)/totalToCache*100);
+    $('#cache-bar').removeClass('bg-success bg-warning').addClass('bg-danger').css('width',perc+'%').attr('aria-valuenow',perc)[0].innerHTML = `${perc}% cached (${remainingToCache} to go)`
+});
 
-// $('#caching').innerHTML = 
+googleStreets.on('seedend',(e)=>{
+    console.log(`finished seeding cache.`);
+    map.dragging.enable();
+    map.scrollWheelZoom.enable();
+    $('#cache-bar').removeClass('bg-danger bg-warning').addClass('bg-success').css('width','100%').attr('aria-valuenow',100)[0].innerHTML = `Cached`
+    map._container.style.opacity = 1;
+    setTimeout(function(){ 
+        _toDefaultView();
+    }, 400);
+});
+
+googleStreets.on('tilecachemiss',(e)=>{
+    // console.log(`cache miss`);
+    $('#cache-bar').addClass('bg-warning').removeClass('bg-success bg-danger')[0].innerHTML = `Cache missing`;
+});
+
+googleStreets.on('tilecachehit',(e)=>{
+    if (remainingToCache <= 1) {
+        $('#cache-bar').removeClass('bg-danger bg-warning').addClass('bg-success')[0].innerHTML = `Cached`;
+    } else {
+        // could not finish caching!
+        $('#cache-bar').removeClass('bg-success bg-warning').addClass('bg-danger').css('width','100%').attr('aria-valuenow',100)[0].innerHTML = `Check connection ⏤ failed to finish caching! (${remainingToCache} to go)`
+    }
+});
+
+if (cache > 0) {
+    googleStreets.seed(county.getBounds(),10, cache);
+}
 
 
 
@@ -578,7 +595,7 @@ $("#help").click((e) => {
     $('#helpModal').modal('show');
 });
 // show on start
-$('#helpModal').modal('show');
+// $('#helpModal').modal('show');
 
 
 
