@@ -485,6 +485,7 @@ $('#next-step-btn').click((e) => {
 
 function _step1View() {
     if (stepView == 1) {return false}
+    stepView = 1;
     $('.s2-wide').animate({'width':'30vw'}, 350);
     $('.s2-narrow').animate({'width':'70vw'},400);
     geocoder.options.collapsed = false;
@@ -496,12 +497,12 @@ function _step1View() {
         $('#next-step-btn').removeAttr('hidden');
     }, 400);
     updateLabelsTable();
-    placeDescriptorIndex = 1;
-    stepView = 1;
+    placeDescriptorIndex = 1;   
 }
 
 function _step2View() {
     if (stepView == 2) {return false}
+    stepView = 2;
     $('.s2-narrow').animate({'width':'20vw'},350);
     $('.s2-wide').animate({'width':'80vw'}, 400);
     geocoder.options.collapsed = true;
@@ -512,7 +513,6 @@ function _step2View() {
         _updatePlaceDescriptor();
     }, 400);
     updateLabelsTable();
-    stepView = 2;
 }
 
 function _updatePlaceDescriptor() {
