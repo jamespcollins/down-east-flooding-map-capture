@@ -265,7 +265,7 @@ map.on('draw:editstop', function () {
     updateLabelsTable();
 });
 
-function updateLabelsTable(onlyFlooding = false) {
+function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
     var labels = [];
     drawnItems.eachLayer(function (layer) {
         if (layer.feature && layer.feature.properties.label) {
@@ -286,7 +286,17 @@ function updateLabelsTable(onlyFlooding = false) {
     tableBody.innerHTML = '';
 
     labels.forEach(function (item) {
+        // check if only flooding
         if (onlyFlooding && !item.layer.feature.properties.clicked) {
+            return(false);
+        }
+
+        console.log(item.type);
+        console.log(featureTypes);
+
+        // check layer type
+        if (featureTypes && !(featureTypes.includes(item.type))) {
+            console.log('filtered')
             return(false);
         }
 
@@ -296,6 +306,11 @@ function updateLabelsTable(onlyFlooding = false) {
         var idCell = document.createElement('td');
         idCell.textContent = item.id;
 
+        var shapeCell = document.createElement('td');
+        if (item.type === 'circle')     {shapeCell.innerHTML = '&#9711;'}
+        if (item.type === 'polyline')   {shapeCell.textContent = '⏤'}
+        
+
         var labelCell = document.createElement('td');
         var labelLink = document.createElement('a');
         labelLink.href = "#";
@@ -304,8 +319,8 @@ function updateLabelsTable(onlyFlooding = false) {
         // labelLink.style.textDecoration = "underline";
         labelLink.addEventListener('click', function(event) {
             event.preventDefault();
-            if (item.type === 'circle') {map.setView(item.layer.getLatLng(), 14)}
-            if (item.type === 'polyline') {map.fitBounds(item.layer.getBounds(), 14)}
+            if (item.type === 'circle')     {map.setView(item.layer.getLatLng(), 14)}
+            if (item.type === 'polyline')   {map.fitBounds(item.layer.getBounds(), 14)}
             // item.layer.openTooltip();
         });
         labelCell.appendChild(labelLink);
@@ -348,6 +363,7 @@ function updateLabelsTable(onlyFlooding = false) {
         editCell.appendChild(deleteIcon);
 
         row.appendChild(idCell);
+        row.appendChild(shapeCell);
         row.appendChild(labelCell);
         row.appendChild(checkboxCell);
         row.appendChild(editCell);
@@ -565,7 +581,7 @@ function _updatePlaceDescriptor() {
         descriptor = placeDescriptors[placeDescriptorIndex];
         $('#place-descriptors h1').text(descriptor.prompt).css('margin-bottom','0.2em');
         $('#place-descriptors small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
-        updateLabelsTable(onlyFlooding = descriptor.onlyFlooding);
+        updateLabelsTable(onlyFlooding = descriptor.onlyFlooding, onlyFlooding = descriptor.featureTypes);
     } else {
         $('#place-descriptors h1, #place-descriptors small').text("").css('margin-bottom','0');
         updateLabelsTable();
@@ -619,49 +635,61 @@ var placeDescriptors = {
     1: {
         prompt: "At which of these places have you seen flooding?",
         onlyFlooding: false,
+        featureTypes: ['circle','polyline']
     },
     2: {
         prompt: "Which of these places are most affected by flooding?",
         onlyFlooding: false,
+        featureTypes: ['circle','polyline']
     },
     3: {
         prompt: "In the last year, how often did you see flooding at each place?",
         onlyFlooding: true,
+        featureTypes: ['circle','polyline']
     },
     4: {
         prompt: "How does flooding at each place disrupt your day-to-day life, if at all?",
         onlyFlooding: true,
+        featureTypes: ['circle','polyline']
     },
     5: {
         prompt: "How do you deal with flooding at each place?",
         onlyFlooding: true,
+        featureTypes: ['circle','polyline']
     },
     6: {
         prompt: "If you imagine flooding that's severe enough that you can't rely on each place...",
         onlyFlooding: false,
+        featureTypes: ['circle','polyline']
     },
     7: {
         prompt: "How deep would the water be?",
         onlyFlooding: false,
+        featureTypes: ['circle','polyline']
     },
     8: {
         prompt: "What fraction of the area would be covered by water?",
         onlyFlooding: false,
+        featureTypes: ['circle','polyline']
     },
     9: {
         prompt: "How frequent would the flooding be?",
         onlyFlooding: false,
+        featureTypes: ['circle','polyline']
     },
     10: {
-        prompt: "If each place is too severely flooded, how long are you willing to travel to a comparable place?",
+        prompt: "Looking through your list of places, if you couldn't access these places, what are the comparable alternatives?",
         onlyFlooding: false,
+        featureTypes: ['circle']
     },
     11: {
-        prompt: "If your usual route to each place is too severely flooded, how long are you willing to travel on an alternate route?",
+        prompt: "If a place were too severely flooded, how long would you be willing to travel to a comparable, alternative place?",
         onlyFlooding: false,
+        featureTypes: ['circle']
     },
     12: {
-        prompt: "What would you do without each place?",
+        prompt: "If your usual route were too severely flooded, how long would you be willing to travel on an alternate route?",
         onlyFlooding: false,
+        featureTypes: ['polyline']
     }
 };
