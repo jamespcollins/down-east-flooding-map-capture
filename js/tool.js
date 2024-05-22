@@ -650,8 +650,8 @@ function _step1View() {
     $('.s2-wide').animate({'width':'30vw'}, 350);
     $('.s2-narrow').animate({'width':'70vw'},400);
     $('.s2-show').css('color','transparent');
-    geocoder.options.collapsed = false;
-    geocoder.remove().addTo(map);
+    // geocoder.options.collapsed = false;
+    // geocoder.remove().addTo(map);
     _updatePlaceDescriptor();
     setTimeout(function(){ 
         map.invalidateSize();
@@ -669,7 +669,7 @@ function _step2View() {
     $('.s2-wide').animate({'width':'80vw'}, 400);
     $('.s2-show').css('color','rgb(33, 37, 41)');
     // geocoder.options.collapsed = true;
-    geocoder.remove().addTo(map);
+    // geocoder.remove().addTo(map);
     setTimeout(function(){ 
         map.invalidateSize();
         $('#prev-step-btn').removeAttr('hidden');
