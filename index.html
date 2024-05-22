@@ -116,7 +116,7 @@
 
     <!-- Help modal -->
     <div id="helpModal" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Instructions</h5>
@@ -129,23 +129,42 @@
                     <p>Always export data before reloading the page by finishing at the export button.</p>
                     <div class="accordion" id="helpAccordion">
                         <div class="card">
-                            <div class="card-header" id="headingOne">
+                            <div class="card-header">
                             <h2 class="mb-0">
                                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                URL Parameters
+                                Caching
                                 </button>
                             </h2>
                             </div>
                         
                             <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#helpAccordion">
                             <div class="card-body">
-                                <p>Add <code>?r=12345</code> to the end of the URL to automatically add respondent ID to export file name.</p>
-                                <p>Add <code>?cache=true</code> to the end of the URL to cache default basemap tiles for one month.</p>
+                                <p>Google Streets tiles can be cached locally for one month.</p>
+                                <p>The bar in the lower right corner indicates cache status of the current map view.</p>
+                                <p>To build the tile cache, add <code>?cache=10</code> to the end of the URL to cache. Replace <code>10</code> with the desired zoom level (between <code>10</code> and <code>16</code>).</p>
+                                <p class="text-info">Note: tile counts increase exponentially with zoom level. Zoom of <code>10</code> yields ~16 tiles. Zoom of <code>16</code> yields >30,000 tiles.</p>
+                                <p>Press <code>t</code> to cache the current map view to zoom level <code>15</code> (fine enough for most street names to appear).</p>
                             </div>
                             </div>
                         </div>
                         <div class="card">
-                            <div class="card-header" id="headingTwo">
+                            <div class="card-header">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                Respondent ID
+                                </button>
+                            </h2>
+                            </div>
+                        
+                            <div id="collapseThree" class="collapse" aria-labelledby="headingOne" data-parent="#helpAccordion">
+                            <div class="card-body">
+                                <p>Add <code>?r=12345</code> to the end of the URL to automatically add respondent ID to export file name.</p>
+                                <p>Otherwise, you will be prompted to enter the respondent ID to export data.</p>
+                            </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
                             <h2 class="mb-0">
                                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                                 Hotkeys
@@ -181,6 +200,10 @@
                                     <tr>
                                         <th scope="row"><code>e</code></th>
                                         <td>Export places to file</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><code>t</code></th>
+                                        <td>Cache the current map view</td>
                                     </tr>
                                     </tbody>
                                 </table>
