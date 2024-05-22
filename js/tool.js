@@ -125,7 +125,12 @@ var drawControl = new L.Control.Draw({
     },
     draw: {
         polygon: false,
-        polyline: false,
+        polyline: {
+            shapeOptions: {
+                color: 'red'
+            },
+            repeatMode: REPEAT_MODE
+        },
         rectangle: false,
         circle: {
             shapeOptions: {
@@ -167,15 +172,6 @@ function clickOnMarker(e){
 }
 
 var idCounter = 0;
-var currentLayer = null; // To keep track of the current layer
-
-map.on('draw:created', function (e) {
-    var layer = e.layer;
-    if (e.layerType === 'circle') {
-        currentLayer = layer; // Store the layer
-        $('#labelModal').show() // Show the modal
-    }
-});
 
 
 
@@ -183,14 +179,16 @@ map.on('draw:created', function (e) {
 var modal = $('#labelModal');
 var modalEdit = $('#labelModalEdit');
 var currentLayer = null;
+var currentLayerType = null;
 
 map.on('draw:created', function (e) {
     idCounter++;
     var layer = e.layer;
-    if (e.layerType === 'circle') {
-        currentLayer = layer; // Store the layer
-        modal.modal('show'); // Show the modal using Bootstrap
-    }
+    // if (e.layerType === 'circle') {
+    currentLayer = layer; // Store the layer
+    currentLayerType = e.layerType; // Store the layer type
+    modal.modal('show'); // Show the modal using Bootstrap
+    // }
 });
 
 modal.on('show.bs.modal', function (e) {
@@ -206,6 +204,7 @@ modalEdit.on('shown.bs.modal', function (e) {
 
 modal.on('hidden.bs.modal', function () {
     currentLayer = null; // Reset the current layer when the modal is hidden
+    currentLayerType = null;
 });
 
 $('#labelForm').on('submit', function (event) {
@@ -222,14 +221,17 @@ $('#labelForm').on('submit', function (event) {
             id: idCounter,
             label: label,
             clicked: false,
-            order: drawnItems.getLayers().length
+            order: drawnItems.getLayers().length,
+            type: currentLayerType
         }
     };
     currentLayer.on('click', clickOnMarker);
     currentLayer.setStyle(unclickStyle);
     drawnItems.addLayer(currentLayer);
     updateLabelsTable();
-    currentLayer.setRadius(MARKER_DIAMETER_METERS);
+    if (currentLayerType === 'circle') {
+        currentLayer.setRadius(MARKER_DIAMETER_METERS);
+    }
     modal.modal('hide'); // Hide the modal using Bootstrap
 });
 
@@ -271,7 +273,8 @@ function updateLabelsTable(onlyFlooding = false) {
                 id: layer.feature.properties.id,
                 label: layer.feature.properties.label,
                 layer: layer,
-                order: layer.feature.properties.order
+                order: layer.feature.properties.order,
+                type: layer.feature.properties.type,
             });
         }
     });
@@ -301,8 +304,9 @@ function updateLabelsTable(onlyFlooding = false) {
         // labelLink.style.textDecoration = "underline";
         labelLink.addEventListener('click', function(event) {
             event.preventDefault();
-            map.setView(item.layer.getLatLng(), 14);
-            item.layer.openTooltip();
+            if (item.type === 'circle') {map.setView(item.layer.getLatLng(), 14)}
+            if (item.type === 'polyline') {map.fitBounds(item.layer.getBounds(), 14)}
+            // item.layer.openTooltip();
         });
         labelCell.appendChild(labelLink);
 
@@ -487,6 +491,11 @@ Mousetrap.bind(['g'], function(e) {
 
 Mousetrap.bind(['c','n'], function(e) {
     document.getElementsByClassName("leaflet-draw-draw-circle")[0].click()
+    return false;
+});
+
+Mousetrap.bind(['l'], function(e) {
+    document.getElementsByClassName("leaflet-draw-draw-polyline")[0].click()
     return false;
 });
 
