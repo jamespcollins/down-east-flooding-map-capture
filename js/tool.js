@@ -420,5 +420,5 @@ Mousetrap.bind(['esc'], function(e) {
 
 // Help
 document.getElementById("help").onclick = function () {
-    alert("Always save before reloading! \n[c] Place new circle \n[g] Focus on geocoder \n[e] Export geodata \n[r or esc] Reset map view");
+    $('#helpModal').show();
 }

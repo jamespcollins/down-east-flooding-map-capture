@@ -83,8 +83,8 @@
 <body>
     <div id="map"></div>
     <div id="controls">
-        <button id="export-btn" class="disabled" disabled="disabled">Save places</button>
-        <small id="help">Help...</small>
+        <button id="export-btn" class="disabled" disabled="disabled">Export places</button>
+        <b id="help">&#9432;</b>
         <table id="labels-table">
             <thead>
                 <tr>
@@ -147,6 +147,54 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelButton">Cancel</button>
                     <button type="submit" class="btn btn-primary" form="labelFormEdit">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help modal -->
+    <div id="helpModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Instructions</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Always save before reloading!</p>
+                    <p>Hotkeys</p>
+                    <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th scope="col">Key</th>
+                            <th scope="col">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th scope="row"><pre>c</pre></th>
+                            <td>Draw a circle marker</td>
+                          </tr>
+                          <tr>
+                            <th scope="row"><pre>r or esc</pre></th>
+                            <td>Reset map view</td>
+                          </tr>
+                          <tr>
+                            <th scope="row"><pre>s</pre></th>
+                            <td>Focus on search</td>
+                          </tr>
+                          <tr>
+                            <th scope="row"><pre>e</pre></th>
+                            <td>Export places to file</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" form="cancelButton">Ok</button>
                 </div>
             </div>
         </div>
