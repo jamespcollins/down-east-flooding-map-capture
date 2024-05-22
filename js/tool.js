@@ -14,6 +14,9 @@ function _oSize(o) {
 var respID = $.urlParam("r");
 var cache = $.urlParam("cache");
 
+
+
+// Basemaps
 // https://gis.stackexchange.com/a/341490
 googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
     maxZoom: 20,
@@ -49,6 +52,9 @@ var USGS_USImageryTopo = L.tileLayer('https://basemap.nationalmap.gov/arcgis/res
     attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
 });
 
+
+
+// Map
 var county = L.geoJSON(carteret_co,{
     style: {
         "color": "#ff7800",
@@ -74,10 +80,29 @@ var map = L.map('map',{
 map.attributionControl.remove();
 map.zoomControl.remove()
 
-// seed cache
+county.addTo(map);
+
+var baseMaps = {
+    "Google Streets": googleStreets,
+    "Google Hybrid": googleHybrid,
+    "Google Imagery": googleSat,
+    "ESRI Topo": Esri_WorldTopoMap,
+    "ESRI Imagery": Esri_WorldImagery,
+    "OpenStreetMap": osm,
+    "USGS Hybrid": USGS_USImageryTopo
+};
+
+var layerControl = L.control.layers(baseMaps)
+layerControl.options.position = "bottomright";
+
+
+
+// Tile cache
 if (cache) {
     googleStreets.seed(map.getBounds(),10, 11); //16);
 }
+
+/////// NOT WORKING ///////
 
 // Listen for the remainingLength event
 googleStreets.on('remainingLength', function(event) {
@@ -99,20 +124,6 @@ function updateProgressBar(progress) {
 
 // $('#caching').innerHTML = 
 
-county.addTo(map);
-
-var baseMaps = {
-    "Google Streets": googleStreets,
-    "Google Hybrid": googleHybrid,
-    "Google Imagery": googleSat,
-    "ESRI Topo": Esri_WorldTopoMap,
-    "ESRI Imagery": Esri_WorldImagery,
-    "OpenStreetMap": osm,
-    "USGS Hybrid": USGS_USImageryTopo
-};
-
-var layerControl = L.control.layers(baseMaps)
-layerControl.options.position = "bottomright";
 
 
 // Draw handling
@@ -740,39 +751,39 @@ var placeDescriptors = {
 var placeCategories = {
     1: {
         tag: "residence",
-        label: "Primary residence"
+        label: "primary residence"
     },
     2: {
         tag: "property",
-        label: "Other property"
+        label: "other property"
     },
     3: {
         tag: "work",
-        label: "Work or occupation"
+        label: "work or occupation"
     },
     4: {
         tag: "street",
-        label: "Local street"
+        label: "local street"
     },
     5: {
         tag: "majorroad",
-        label: "Major road or bridge"
+        label: "major road or bridge"
     },
     6: {
         tag: "goodssvcs",
-        label: "Groceries and services"
+        label: "groceries and services"
     },
     7: {
         tag: "relax",
-        label: "Relax by self"
+        label: "relax by self"
     },
     8: {
         tag: "connect",
-        label: "Connect with others"
+        label: "connect with others"
     },
     9: {
         tag: "other",
-        label: "Other property"
+        label: "other concern"
     }
 }
 

@@ -6,9 +6,9 @@
 
 ## Requests
 
+- add caching indicator
 - add place generator questions
 - look into selecting tools
-- add caching indicator
 
 ## Improvements
 
