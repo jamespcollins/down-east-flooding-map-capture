@@ -119,6 +119,8 @@ googleStreets.on('seedprogress',(e)=>{
 });
 
 googleStreets.on('seedend',(e)=>{
+    initialCache = false;
+
     console.log(`finished seeding cache.`);
 
     map.dragging.enable();
@@ -601,7 +603,9 @@ Mousetrap.bind(['e'], function(e) {
 });
 
 Mousetrap.bind(['t'], function(e) {
-    googleStreets.seed(map.getBounds(),10, 15);
+    if (map.getZoom() > 14) {
+        googleStreets.seed(map.getBounds(), 13, 17);
+    }
     return false;
 });
 
