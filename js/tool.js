@@ -146,7 +146,7 @@ googleStreets.on('tilecachehit',(e)=>{
         $('#cache-bar').removeClass('bg-danger bg-warning').addClass('bg-success').css('opacity',1)[0].innerHTML = `Cached`;
     } else {
         // could not finish caching!
-        $('#cache-bar').removeClass('bg-success bg-warning').addClass('bg-danger').css('width','100%').attr('aria-valuenow',100)[0].innerHTML = `Check connection ⏤ failed to finish caching! (${remainingToCache} to go)`
+        $('#cache-bar').removeClass('bg-success bg-warning').addClass('bg-danger').css('width','100%').attr('aria-valuenow',100)[0].innerHTML = `Check connection ⏤ failed to finish caching! (${remainingToCache-1} to go)`
     }
 });
 
@@ -154,6 +154,14 @@ if (cache > 0) {
     initialCache = true;
     googleStreets.seed(county.getBounds(),10, cache);
 }
+
+$('.cache-status').on('click', ()=>{
+    googleStreets._db.info().then(function (r) {
+        alert(`Tile cache file count: ${r.doc_count} \nTiles attempting to cache: ${totalToCache} \nTiles remaining to cache: ${remainingToCache}`);
+    }).catch(function (err) {
+        console.log(err);
+    });
+});
 
 
 

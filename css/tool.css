@@ -70,7 +70,6 @@ button.disabled {
 }
 #help, a {
     color:rgb(2, 133, 199);
-    cursor: pointer;
 }
 .sticky-footer {
     position: fixed;
@@ -83,4 +82,13 @@ button.disabled {
 }
 .s2-show {
     color:transparent;
+}
+.cache-status, #help {
+    cursor: help;
+}
+#next-step-btn {
+    cursor: e-resize;
+}
+#prev-step-btn {
+    cursor: w-resize;
 }
