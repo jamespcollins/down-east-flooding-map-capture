@@ -288,7 +288,9 @@ function updateLabelsTable(onlyFlooding = false) {
                 item.layer.setStyle(unclickStyle);
             }
         });
-        checkboxCell.appendChild(checkbox);
+        if (stepView == 2) {
+            checkboxCell.appendChild(checkbox);
+        }
 
         var editCell = document.createElement('td');
         var editIcon = document.createElement('span');
@@ -488,6 +490,7 @@ function _step1View() {
     stepView = 1;
     $('.s2-wide').animate({'width':'30vw'}, 350);
     $('.s2-narrow').animate({'width':'70vw'},400);
+    $('.s2-show').css('color','transparent');
     geocoder.options.collapsed = false;
     geocoder.remove().addTo(map);
     _updatePlaceDescriptor();
@@ -499,12 +502,14 @@ function _step1View() {
     updateLabelsTable();
     placeDescriptorIndex = 1;   
 }
+$('.s2-show').css('color','transparent');
 
 function _step2View() {
     if (stepView == 2) {return false}
     stepView = 2;
     $('.s2-narrow').animate({'width':'20vw'},350);
     $('.s2-wide').animate({'width':'80vw'}, 400);
+    $('.s2-show').css('color','rgb(33, 37, 41)');
     geocoder.options.collapsed = true;
     geocoder.remove().addTo(map);
     setTimeout(function(){ 
