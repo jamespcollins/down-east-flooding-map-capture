@@ -121,38 +121,67 @@
                 <div class="modal-body">
                     <p>Start by soliciting map locations, the progress through place-based questions using "Next" button.</p>
                     <p>Always export data before reloading the page by finishing at the export button.</p>
-                    <p>Add <code>?=12345</code> to the end of the URL to automatically add respondent ID to export file name.</p>
-                    <p>Hotkeys</p>
-                    <table class="table table-sm">
-                        <thead>
-                          <tr>
-                            <th scope="col">Key</th>
-                            <th scope="col">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <th scope="row"><code>c</code> or <code>n</code></th>
-                            <td>Draw a circle marker</td>
-                          </tr>
-                          <tr>
-                            <th scope="row"><code>l</code></th>
-                            <td>Draw a line segment</td>
-                          </tr>
-                          <tr>
-                            <th scope="row"><code>r</code> or <code>esc</code></th>
-                            <td>Reset map view</td>
-                          </tr>
-                          <tr>
-                            <th scope="row"><code>s</code></th>
-                            <td>Focus on search</td>
-                          </tr>
-                          <tr>
-                            <th scope="row"><code>e</code></th>
-                            <td>Export places to file</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div class="accordion" id="helpAccordion">
+                        <div class="card">
+                            <div class="card-header" id="headingOne">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                URL Parameters
+                                </button>
+                            </h2>
+                            </div>
+                        
+                            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#helpAccordion">
+                            <div class="card-body">
+                                <p>Add <code>?r=12345</code> to the end of the URL to automatically add respondent ID to export file name.</p>
+                                <p>Add <code>?cache=true</code> to the end of the URL to cache default basemap tiles for one month.</p>
+                            </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header" id="headingTwo">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Hotkeys
+                                </button>
+                            </h2>
+                            </div>
+                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#helpAccordion">
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Key</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <th scope="row"><code>c</code> or <code>n</code></th>
+                                        <td>Draw a circle marker</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><code>l</code></th>
+                                        <td>Draw a line segment</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><code>r</code> or <code>esc</code></th>
+                                        <td>Reset map view</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><code>s</code></th>
+                                        <td>Focus on search</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"><code>e</code></th>
+                                        <td>Export places to file</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
                     
                 </div>
                 <div class="modal-footer">
