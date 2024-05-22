@@ -11,6 +11,8 @@
 - apple pencil drawing…?
 	- ipad sidecar…
 
+## Bugs
+- need to prevent table sort when filtering to flooding only
 
 # Implemented
 

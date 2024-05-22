@@ -233,7 +233,7 @@ map.on('draw:editstop', function () {
     updateLabelsTable();
 });
 
-function updateLabelsTable() {
+function updateLabelsTable(onlyFlooding = false) {
     var labels = [];
     drawnItems.eachLayer(function (layer) {
         if (layer.feature && layer.feature.properties.label) {
@@ -253,6 +253,10 @@ function updateLabelsTable() {
     tableBody.innerHTML = '';
 
     labels.forEach(function (item) {
+        if (onlyFlooding && !item.layer.feature.properties.clicked) {
+            return(false);
+        }
+
         var row = document.createElement('tr');
         row.setAttribute('data-id', item.id);
 
@@ -513,10 +517,13 @@ function _step2View() {
 
 function _updatePlaceDescriptor() {
     if (stepView == 2) {
-        $('#place-descriptors h1').text(placeDescriptors[placeDescriptorIndex]).css('margin-bottom','0.2em');
+        descriptor = placeDescriptors[placeDescriptorIndex];
+        $('#place-descriptors h1').text(descriptor.prompt).css('margin-bottom','0.2em');
         $('#place-descriptors small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
+        updateLabelsTable(onlyFlooding = descriptor.onlyFlooding);
     } else {
         $('#place-descriptors h1, #place-descriptors small').text("").css('margin-bottom','0');
+        updateLabelsTable();
     }
 }
 
@@ -564,16 +571,52 @@ function _updateNextStep() {
 // Place descriptor handlers
 var placeDescriptorIndex = 1;
 var placeDescriptors = {
-    1: "At which of these places have you seen flooding?",
-    2: "Which of these places are most affected by flooding?",
-    3: "In the last year, how often did you see flooding at each place?",
-    4: "How does flooding at each place disrupt your day-to-day life, if at all?",
-    5: "How do you deal with flooding at each place?",
-    6: "If you imagine flooding that's severe enough that you can't rely on each place...",
-    7: "How deep would the water be?",
-    8: "What fraction of the area would be covered by water?",
-    9: "How frequent would the flooding be?",
-    10: "If each place is too severely flooded, how long are you willing to travel to a comparable place?",
-    11: "If your usual route to each place is too severely flooded, how long are you willing to travel on an alternate route?",
-    12: "What would you do without each place?"
+    1: {
+        prompt: "At which of these places have you seen flooding?",
+        onlyFlooding: false,
+    },
+    2: {
+        prompt: "Which of these places are most affected by flooding?",
+        onlyFlooding: false,
+    },
+    3: {
+        prompt: "In the last year, how often did you see flooding at each place?",
+        onlyFlooding: true,
+    },
+    4: {
+        prompt: "How does flooding at each place disrupt your day-to-day life, if at all?",
+        onlyFlooding: true,
+    },
+    5: {
+        prompt: "How do you deal with flooding at each place?",
+        onlyFlooding: true,
+    },
+    6: {
+        prompt: "If you imagine flooding that's severe enough that you can't rely on each place...",
+        onlyFlooding: false,
+    },
+    7: {
+        prompt: "How deep would the water be?",
+        onlyFlooding: false,
+    },
+    8: {
+        prompt: "What fraction of the area would be covered by water?",
+        onlyFlooding: false,
+    },
+    9: {
+        prompt: "How frequent would the flooding be?",
+        onlyFlooding: false,
+    },
+    10: {
+        prompt: "If each place is too severely flooded, how long are you willing to travel to a comparable place?",
+        onlyFlooding: false,
+    },
+    11: {
+        prompt: "If your usual route to each place is too severely flooded, how long are you willing to travel on an alternate route?",
+        onlyFlooding: false,
+    },
+    12: {
+        prompt: "What would you do without each place?",
+        onlyFlooding: false,
+    }
 };
