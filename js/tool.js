@@ -12,14 +12,16 @@ function _oSize(o) {
 }
 
 var respID = $.urlParam("r");
+var cache = $.urlParam("cache");
 
 // https://gis.stackexchange.com/a/341490
 googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
     maxZoom: 20,
     subdomains:['mt0','mt1','mt2','mt3'],
     useCache: true,
-    useOnlyCache: true,
-	crossOrigin: true
+    // useOnlyCache: true,
+	crossOrigin: true,
+    cacheMaxAge: 2.6298e+9 // 1 month
 });
 googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
     maxZoom: 20,
@@ -73,7 +75,29 @@ map.attributionControl.remove();
 map.zoomControl.remove()
 
 // seed cache
-// googleStreets.seed(map.getBounds(),10,16)
+if (cache) {
+    googleStreets.seed(map.getBounds(),10, 11); //16);
+}
+
+// Listen for the remainingLength event
+googleStreets.on('remainingLength', function(event) {
+    var totalTiles = event.total;
+    var remainingTiles = event.remaining;
+
+    // Calculate the caching progress
+    var progress = ((totalTiles - remainingTiles) / totalTiles) * 100;
+
+    // Update your progress bar with the calculated progress
+    updateProgressBar(progress);
+});
+
+function updateProgressBar(progress) {
+    // Update your progress bar with the calculated progress value
+    // You can use any progress bar library or custom implementation here
+    console.log('Caching progress: ' + progress + '%');
+}
+
+// $('#caching').innerHTML = 
 
 county.addTo(map);
 
