@@ -6,9 +6,6 @@
 
 ## Next version
 
-- mark flooding on first view
-- enter respondent id on startup
-
 ## Future versions
 
 - iPad support, at least using sidecar
@@ -24,13 +21,4 @@
 # Bugs
 
 - need to prevent table sort when filtered
-
-# Implemented
-
-- add caching indicator 3dd96d1d17aa78c5e65eee6c539898b457b15bcd
-- add category display to table... filter questions based on this 2d16665519b95288b4740b4a90b8f0dcbb5238d9
-    - need to allow multiple categories
-- add lines b3ba373334461175336aba8e35e44462f9a85cfe
-- add basemap caching 0b470b1b1d3ce8b1d74c65932ee9ed82f856b2bd
-- use better basemap (Google) a4f280d9e9765829671e7282a20591bafc46ede8
 

@@ -43,6 +43,7 @@
                     <button id="prev-step-btn" class="button enabled" hidden>&#8249; Previous</button>
                 </div>
                 <div class="col text-center" style="vertical-align: middle;">
+                    <!-- <small class="text-muted" id="respondentID"></small> -->
                     <button id="help" class="bg-transparent">&#9432;</button>
                 </div>
                 <div class="col text-right">
@@ -55,6 +56,31 @@
                     <div class="progress cache-status" style="height: 20px;">
                         <div class="progress-bar bg-success" id="cache-bar" role="progressbar" style="padding: 0 10px; width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">Cached</div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for respondent id input -->
+    <div id="respondentIDModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Enter respondent ID</h5>
+                    <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button> -->
+                </div>
+                <div class="modal-body">
+                    <form id="respondentIDForm">
+                        <div class="form-group">
+                            <input type="number" class="form-control focus-input" id="respondentIDInput" name="respondentIDInput" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelButton">Cancel</button> -->
+                    <button type="submit" class="btn btn-primary" form="respondentIDForm">Submit</button>
                 </div>
             </div>
         </div>
@@ -74,7 +100,7 @@
                     <form id="labelForm">
                         <div class="form-group">
                             <!-- <label for="circleLabel">Label</label> -->
-                            <input type="text" class="form-control" id="circleLabel" name="circleLabel" required>
+                            <input type="text" class="form-control focus-input" id="circleLabel" name="circleLabel" required>
                         </div>
                         <div class="form-group place-categories place-categories-initial"></div>
                     </form>
@@ -101,7 +127,7 @@
                     <form id="labelFormEdit">
                         <div class="form-group">
                             <!-- <label for="circleLabel">Label</label> -->
-                            <input type="text" class="form-control" id="circleLabelEdit" name="circleLabel" required>
+                            <input type="text" class="form-control focus-input" id="circleLabelEdit" name="circleLabel" required>
                         </div>
                         <div class="form-group place-categories place-categories-edit"></div>
                     </form>
@@ -168,8 +194,8 @@
                         
                             <div id="collapseThree" class="collapse" aria-labelledby="headingOne" data-parent="#helpAccordion">
                             <div class="card-body">
-                                <p>Add <code>?r=12345</code> to the end of the URL to automatically add respondent ID to export file name.</p>
-                                <p>Otherwise, you will be prompted to enter the respondent ID to export data.</p>
+                                <!-- <p>Add <code>?r=12345</code> to the end of the URL to automatically add respondent ID to export file name.</p> -->
+                                <p>The respondent ID entered on startup is displayed next to the info icon in the lower right corner.</p>
                             </div>
                             </div>
                         </div>

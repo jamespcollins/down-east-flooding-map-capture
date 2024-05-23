@@ -228,6 +228,7 @@ var idCounter = 0;
 // Modal handling
 var modal = $('#labelModal');
 var modalEdit = $('#labelModalEdit');
+var modalRespID = $('#respondentIDModal');
 var currentLayer = null;
 var currentLayerType = null;
 
@@ -245,11 +246,8 @@ modal.on('show.bs.modal', function (e) {
     document.getElementById("circleLabel").value = "";
 });
 
-modal.on('shown.bs.modal', function (e) {
-    $("#circleLabel").focus();
-});
-modalEdit.on('shown.bs.modal', function (e) {
-    $("#circleLabelEdit").focus();
+$(".modal").on('shown.bs.modal', function (e) {
+    $(e.target.getElementsByClassName('focus-input')).focus()
 });
 
 modal.on('hidden.bs.modal', function () {
@@ -261,6 +259,14 @@ modal.on('hidden.bs.modal', function () {
 modalEdit.on('hidden.bs.modal', function () {
     _clearCategoryCheckboxes()
 });
+
+$('#respondentIDForm').on('submit', (e) => {
+    e.preventDefault();
+    respID = document.getElementById("respondentIDInput").value;
+    modalRespID.modal('hide');
+    $('#help').html(respID + ' &#9432;');
+});
+modalRespID.modal('show');
 
 $('#labelForm').on('submit', function (event) {
     event.preventDefault();
