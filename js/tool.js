@@ -425,9 +425,9 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
                 item.layer.setStyle(unclickStyle);
             }
         });
-        if (stepView == 2) {
+        // if (stepView == 2) {
             checkboxCell.appendChild(checkbox);
-        }
+        // }
 
         // Edit
         var editCell = document.createElement('td');
