@@ -6,8 +6,11 @@
 
 ## Next version
 
+- search offline road layer
+
 ## Future versions
 
+- reload from data form cache
 - iPad support, at least using sidecar
     - apple pencil drawing…?
 - add place generator questions
@@ -20,5 +23,6 @@
 
 # Bugs
 
+- previous step has extra click in single place mode
 - need to prevent table sort when filtered
 

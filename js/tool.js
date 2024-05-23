@@ -292,7 +292,8 @@ $('#labelForm').on('submit', function (event) {
             clicked: false,
             order: drawnItems.getLayers().length,
             type: currentLayerType,
-            categories: categories
+            categories: categories,
+            categoryLabels: _makeCategoryLabels(categories)
         }
     };
     currentLayer.on('click', clickOnMarker);
@@ -333,12 +334,27 @@ function openEditModal(layer) {
 
         layer.feature.properties.label = label;
         layer.feature.properties.categories = categories;
+        layer.feature.properties.categoryLabels = _makeCategoryLabels(categories);
         layer.setTooltipContent(layer.feature.properties.id + ": " + label);
         modalEdit.modal('hide');
         updateLabelsTable();
     });
 }
 
+
+
+// Category handling
+function _makeCategoryLabels(categoryArray) {
+    noCats = categoryArray.length;
+    catCt = 1;
+    cats = '';
+    categoryArray.forEach((o) => {
+        cats += placeCategoriesLookUp[o];
+        if (catCt < noCats) {cats += ', '}
+        catCt++;
+    });
+    return(cats);
+}
 
 
 // Table handling
@@ -348,8 +364,12 @@ map.on('draw:editstop', function () {
     updateLabelsTable();
 });
 
-function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
-    var labels = [];
+var labels = [];
+function updateLabelsTable(
+    onlyFlooding = false, 
+    featureTypes = false
+) {
+    labels = [];
     drawnItems.eachLayer(function (layer) {
         if (layer.feature && layer.feature.properties.label) {
             labels.push({
@@ -358,7 +378,7 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
                 layer: layer,
                 order: layer.feature.properties.order,
                 type: layer.feature.properties.type,
-                categories: layer.feature.properties.categories
+                categories: layer.feature.properties.categoryLabels
             });
         }
     });
@@ -408,15 +428,7 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
 
         // Categories
         var categoriesCell = document.createElement('td');
-        noCats = item.categories.length;
-        catCt = 1;
-        cats = '';
-        item.categories.forEach((o) => {
-            cats += placeCategoriesLookUp[o];
-            if (catCt < noCats) {cats += ', '}
-            catCt++;
-        });
-        categoriesCell.innerHTML = cats;
+        categoriesCell.innerHTML = item.categories;
 
         // Flooding checkbox
         var checkboxCell = document.createElement('td');
@@ -433,6 +445,7 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
         });
         // if (stepView == 2) {
             checkboxCell.appendChild(checkbox);
+            $(checkboxCell).addClass('text-center');
         // }
 
         // Edit
@@ -456,6 +469,7 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
             updateLabelsTable();
         });
         editCell.appendChild(deleteIcon);
+        $(editCell).addClass('text-right');
 
         row.appendChild(idCell);
         row.appendChild(shapeCell);
@@ -469,11 +483,11 @@ function updateLabelsTable(onlyFlooding = false, featureTypes = false) {
 
     // Update the counter on the export button
     if (labels.length > 0) {
-        $('#export-btn').textContent = `Export ${labels.length} places`;
+        // $('#export-btn').textContent = `Export ${labels.length} places`;
         $('.min-one-place-btn').addClass('enabled').removeClass("disabled").removeAttr("disabled");
     } else {
         _step1View();
-        $('#export-btn').textContent = `Export places`;
+        // $('#export-btn').textContent = `Export places`;
         $('.min-one-place-btn').removeClass('enabled').addClass("disabled").attr("disabled","disabled");
     }
 
@@ -642,13 +656,19 @@ $("#help").click((e) => {
 // Step handler
 var stepView = 1;
 
-$('#prev-step-btn').click((e) => {
-    _updatePrevStep();
-});
+function _prevStepBtnDefault() {
+    $('#prev-step-btn').unbind('click').click((e) => {
+        _updatePrevStep();
+    });
+}
+_prevStepBtnDefault();
 
-$('#next-step-btn').click((e) => {
-    _updateNextStep();
-});
+function _nextStepBtnDefault() {
+    $('#next-step-btn').unbind('click').click((e) => {
+        _updateNextStep();
+    });
+}
+_nextStepBtnDefault();
 
 function _step1View() {
     if (stepView == 1) {return false}
@@ -686,13 +706,74 @@ function _step2View() {
 
 function _updatePlaceDescriptor() {
     if (stepView == 2) {
-        descriptor = placeDescriptors[placeDescriptorIndex];
-        $('#place-descriptors h1').html(descriptor.prompt).css('margin-bottom','0.2em');
+        d = placeDescriptors[placeDescriptorIndex];
+
+        if (d.singlePlace) {
+            console.log('here1');
+            $('#labels-table').hide();
+
+            if (currentPlace == 0 && labels.length > 1) {
+                $('#prev-step-btn').unbind('click').click((e) => {
+                    _prevPlace();
+                });
+
+                $('#next-step-btn').unbind('click').click((e) => {
+                    _nextPlace();
+                });
+            }
+
+            $('#place-descriptors h1').html(
+                d.prompt.replaceAll('{{place}}',labels[currentPlace].label + ` (${labels[currentPlace].categories})`)
+            ).css('margin-bottom','0.2em');
+            $('#place-descriptors > small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
+
+            return(true);
+        }
+        
+        // default behaviors
+        $('#labels-table').show();
+        currentPlace = 0;
+        _prevStepBtnDefault();
+        _nextStepBtnDefault();
+
+        $('#place-descriptors h1').html(d.prompt).css('margin-bottom','0.2em');
         $('#place-descriptors > small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
-        updateLabelsTable(onlyFlooding = descriptor.onlyFlooding, onlyFlooding = descriptor.featureTypes);
+        updateLabelsTable(
+            onlyFlooding = d.onlyFlooding, 
+            featureTypes = d.featureTypes
+        );
+        return(true);
     } else {
         $('#place-descriptors h1, #place-descriptors small').text("").css('margin-bottom','0');
         updateLabelsTable();
+        return(true);
+    }
+}
+
+
+
+// Single place handler
+var currentPlace = 0;
+
+function _prevPlace() {
+    if (currentPlace > 0) {
+        currentPlace--;
+        _updatePlaceDescriptor();
+    } else {
+        _updatePlaceDescriptor();
+        _prevStepBtnDefault();
+    }
+}
+
+function _nextPlace() {
+    // this will not apply other prompt-based filters...
+    if (currentPlace+2 < labels.length) {
+        currentPlace++;
+        _updatePlaceDescriptor();
+    } else {
+        currentPlace++;
+        _updatePlaceDescriptor();
+        _nextStepBtnDefault();
     }
 }
 
@@ -743,57 +824,63 @@ var placeDescriptors = {
     1: {
         prompt: "At which of these places have you seen flooding?",
         onlyFlooding: false,
+        singlePlace: false,
         featureTypes: ['circle','polyline']
     },
     2: {
         prompt: "Which of these places are most affected by flooding?",
         onlyFlooding: false,
+        singlePlace: false,
         featureTypes: ['circle','polyline']
     },
     3: {
         prompt: "In the last year, how many weeks did you see flooding at each place?",
         onlyFlooding: true,
+        singlePlace: false,
         featureTypes: ['circle','polyline']
     },
     4: {
         prompt: "How does flooding at each place disrupt your day-to-day life, if at all?",
         onlyFlooding: true,
+        singlePlace: false,
         featureTypes: ['circle','polyline']
     },
     5: {
         prompt: "How do you deal with flooding at each place?",
         onlyFlooding: true,
+        singlePlace: false,
         featureTypes: ['circle','polyline']
     },
     6: {
-        prompt: "<small>If flooding was so severe you couldn't rely on a place like you do now,</small><br /> how deep would the water be at each place?",
+        prompt: `<small>If flooding was so severe you couldn't rely on <br /><div class="alert-info p-3 d-inline-block rounded">{{place}}</div><br/>like you do now...</small><br />`+
+         `How deep would the water be? <br />What fraction would be covered by water? <br />How often would it be flooding?`,
         onlyFlooding: false,
+        singlePlace: true,
         featureTypes: ['circle','polyline']
     },
     7: {
-        prompt: "<small>If flooding was so severe you couldn't rely on a place like you do now,</small><br /> what fraction of each place would be covered by water?",
-        onlyFlooding: false,
-        featureTypes: ['circle','polyline']
-    },
-    8: {
-        prompt: "<small>If flooding was so severe you couldn't rely on a place like you do now,</small><br /> how often would each place be flooding",
-        onlyFlooding: false,
-        featureTypes: ['circle','polyline']
-    },
-    9: {
         prompt: "Looking through your list of places, what are the comparable alternatives for each place?",
         onlyFlooding: false,
+        singlePlace: false,
         featureTypes: ['circle']
     },
-    10: {
+    8: {
         prompt: "If these places were too severely flooded, how long would you be willing to travel to a comparable, alternative place?",
         onlyFlooding: false,
+        singlePlace: false,
         featureTypes: ['circle']
     },
-    11: {
+    9: {
         prompt: "If your usual route were too severely flooded, how long would you be willing to travel on an alternate route?",
         onlyFlooding: false,
+        singlePlace: false,
         featureTypes: ['polyline']
+    },
+    10: {
+        prompt: `<div class="alert-success rounded">Done</div>`,
+        onlyFlooding: false,
+        singlePlace: false,
+        featureTypes: ['circle','polyline']
     }
 };
 
@@ -827,15 +914,15 @@ var placeCategories = {
     },
     7: {
         tag: "relax",
-        label: "relax by self"
+        label: "place to relax by self"
     },
     8: {
         tag: "connect",
-        label: "connect with others"
+        label: "place to connect with others"
     },
     9: {
         tag: "other",
-        label: "other concern"
+        label: "other place of concern"
     }
 }
 
