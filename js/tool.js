@@ -687,8 +687,8 @@ function _step2View() {
 function _updatePlaceDescriptor() {
     if (stepView == 2) {
         descriptor = placeDescriptors[placeDescriptorIndex];
-        $('#place-descriptors h1').text(descriptor.prompt).css('margin-bottom','0.2em');
-        $('#place-descriptors small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
+        $('#place-descriptors h1').html(descriptor.prompt).css('margin-bottom','0.2em');
+        $('#place-descriptors > small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
         updateLabelsTable(onlyFlooding = descriptor.onlyFlooding, onlyFlooding = descriptor.featureTypes);
     } else {
         $('#place-descriptors h1, #place-descriptors small').text("").css('margin-bottom','0');
@@ -751,7 +751,7 @@ var placeDescriptors = {
         featureTypes: ['circle','polyline']
     },
     3: {
-        prompt: "In the last year, how often did you see flooding at each place?",
+        prompt: "In the last year, how many weeks did you see flooding at each place?",
         onlyFlooding: true,
         featureTypes: ['circle','polyline']
     },
@@ -766,36 +766,31 @@ var placeDescriptors = {
         featureTypes: ['circle','polyline']
     },
     6: {
-        prompt: "If you imagine flooding that's severe enough that you can't rely on each place...",
+        prompt: "<small>If flooding was so severe you couldn't rely on a place like you do now,</small><br /> how deep would the water be at each place?",
         onlyFlooding: false,
         featureTypes: ['circle','polyline']
     },
     7: {
-        prompt: "How deep would the water be?",
+        prompt: "<small>If flooding was so severe you couldn't rely on a place like you do now,</small><br /> what fraction of each place would be covered by water?",
         onlyFlooding: false,
         featureTypes: ['circle','polyline']
     },
     8: {
-        prompt: "What fraction of the area would be covered by water?",
+        prompt: "<small>If flooding was so severe you couldn't rely on a place like you do now,</small><br /> how often would each place be flooding",
         onlyFlooding: false,
         featureTypes: ['circle','polyline']
     },
     9: {
-        prompt: "How frequent would the flooding be?",
+        prompt: "Looking through your list of places, what are the comparable alternatives for each place?",
         onlyFlooding: false,
-        featureTypes: ['circle','polyline']
+        featureTypes: ['circle']
     },
     10: {
-        prompt: "Looking through your list of places, if you couldn't access these places, what are the comparable alternatives?",
+        prompt: "If these places were too severely flooded, how long would you be willing to travel to a comparable, alternative place?",
         onlyFlooding: false,
         featureTypes: ['circle']
     },
     11: {
-        prompt: "If a place were too severely flooded, how long would you be willing to travel to a comparable, alternative place?",
-        onlyFlooding: false,
-        featureTypes: ['circle']
-    },
-    12: {
         prompt: "If your usual route were too severely flooded, how long would you be willing to travel on an alternate route?",
         onlyFlooding: false,
         featureTypes: ['polyline']

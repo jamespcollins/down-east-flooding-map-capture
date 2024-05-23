@@ -86,9 +86,9 @@ button.disabled {
 .cache-status, #help {
     cursor: help;
 }
-#next-step-btn {
+/* #next-step-btn {
     cursor: e-resize;
 }
 #prev-step-btn {
     cursor: w-resize;
-}
+} */
