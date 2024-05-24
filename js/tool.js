@@ -928,8 +928,8 @@ var placeDescriptors = {
         featureTypes: ['circle','polyline']
     },
     6: {
-        prompt: `<small>If flooding was so severe you couldn't rely on <br /><div class="alert-info p-3 d-inline-block rounded">{{place}}</div><br/>like you do now...</small><br />`+
-         `How deep would the water be? <br />What fraction would be covered by water? <br />How often would it be flooding?`,
+        prompt: `<br><h3>If <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> were flooding enough for you</h3><h3>to stop visiting <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> or use it differently than you do now...</h3>`+
+         `<h1>How deep would the water be? <br />What fraction would be covered by water? <br />How often would it be flooding?</h1>`,
         onlyFlooding: false,
         singlePlace: true,
         featureTypes: ['circle','polyline']
