@@ -67,8 +67,8 @@ var county = L.geoJSON(carteret_co,{
 var county_roads = L.geoJSON(carteret_co_roads, {
     style: {
         "color": "#000000",
-        "weight": 1,
-        "opacity": 0.3
+        "weight": 0,
+        "opacity": 0
     },
     onEachFeature: (f, l) => {
         if (f.properties.FULLNAME) {
@@ -79,6 +79,7 @@ var county_roads = L.geoJSON(carteret_co_roads, {
         }
     }
 });
+carteret_co_roads = undefined; // unset
 
 var defaultView = {
     center: [34.80675621590259, -76.5376809057703],
@@ -111,6 +112,38 @@ var baseMaps = {
 var layerControl = L.control.layers(baseMaps,overlays,{
     position: 'bottomright'
 });
+
+
+
+// Roads search
+var searchControl = new L.Control.Search({
+    layer: county_roads, // Replace with your GeoJSON layer
+    propertyName: 'FULLNAME', // Property to search
+    marker: false,
+    moveToLocation: function (latlng, title, map) {
+        var zoom = map.getBoundsZoom(latlng.layer.getBounds());
+        map.setView(latlng, zoom);
+    }
+});
+
+searchControl.on('search:locationfound', (e) => {
+    e.layer.setStyle({ 
+        color: '#ffff1c', 
+        weight: 3, 
+        opacity: 0.9 
+    });
+    if (e.layer.feature.properties.FULLNAME) {
+        e.layer.bindTooltip(e.layer.feature.properties.FULLNAME, {
+            permanent: true
+        }).openTooltip();
+    }
+}).on('search:collapsed', (e) => {
+    county_roads.eachLayer((l) => {
+        county_roads.resetStyle(l);
+    }).unbindTooltip();
+});
+
+map.addControl(searchControl);
 
 
 

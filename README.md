@@ -6,8 +6,6 @@
 
 ## Next version
 
-- search offline road layer
-
 ## Future versions
 
 - reload from data form cache
@@ -25,4 +23,5 @@
 
 - previous step has extra click in single place mode
 - need to prevent table sort when filtered
+- having roads layer added makes cursor a pointer, not grab
 
