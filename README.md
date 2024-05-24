@@ -8,6 +8,7 @@
 
 ## Future versions
 
+- click matched road to open new feature form
 - reload from data form cache
 - iPad support, at least using sidecar
     - apple pencil drawing…?
