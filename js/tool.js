@@ -140,7 +140,8 @@ searchControl.on('search:locationfound', (e) => {
 }).on('search:collapsed', (e) => {
     county_roads.eachLayer((l) => {
         county_roads.resetStyle(l);
-    }).unbindTooltip();
+        l.unbindTooltip();
+    });
 });
 
 map.addControl(searchControl);
