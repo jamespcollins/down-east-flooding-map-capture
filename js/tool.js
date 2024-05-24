@@ -117,8 +117,8 @@ var layerControl = L.control.layers(baseMaps,overlays,{
 
 // Roads search
 var searchControl = new L.Control.Search({
-    layer: county_roads, // Replace with your GeoJSON layer
-    propertyName: 'FULLNAME', // Property to search
+    layer: county_roads,
+    propertyName: 'FULLNAME',
     marker: false,
     moveToLocation: function (latlng, title, map) {
         var zoom = map.getBoundsZoom(latlng.layer.getBounds());
@@ -645,6 +645,7 @@ function _removeGeocodeLayers() {
 }
 
 layerControl.addTo(map);
+$('.leaflet-control-geocoder-icon').css('background-image','none').text('📍');
 
 function _toDefaultView() {
     map.setView(defaultView.center, defaultView.zoom);
