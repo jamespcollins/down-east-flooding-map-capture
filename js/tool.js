@@ -248,6 +248,10 @@ modal.on('show.bs.modal', function (e) {
 
 $(".modal").on('shown.bs.modal', function (e) {
     $(e.target.getElementsByClassName('focus-input')).focus()
+}).on('show.bs.modal',()=>{
+    $('.error').hide();
+}).on('hide.bs.modal',()=>{
+    $('.error').hide();
 });
 
 modal.on('hidden.bs.modal', function () {
@@ -270,6 +274,7 @@ modalRespID.modal('show');
 
 $('#labelForm').on('submit', function (event) {
     event.preventDefault();
+
     var label = document.getElementById("circleLabel").value;
     var categories = [];
 
@@ -279,6 +284,11 @@ $('#labelForm').on('submit', function (event) {
             categories.push(o.tag);
         }
     });
+
+    if (categories.length == 0) {
+        _errorNoCategory();
+        return(false);
+    }
 
     currentLayer.bindTooltip(idCounter.toString() + ": " + label, { 
         permanent: true,
@@ -322,6 +332,7 @@ function openEditModal(layer) {
     // Save changes to the layer when the form is submitted
     $('#labelFormEdit').on('submit', function(event) {
         event.preventDefault();
+        
         var label = document.getElementById('circleLabelEdit').value;
         var categories = [];
 
@@ -331,6 +342,11 @@ function openEditModal(layer) {
                 categories.push(o.tag);
             }
         });
+
+        if (categories.length == 0) {
+            _errorNoCategory();
+            return(false);
+        }
 
         layer.feature.properties.label = label;
         layer.feature.properties.categories = categories;
@@ -355,6 +371,11 @@ function _makeCategoryLabels(categoryArray) {
     });
     return(cats);
 }
+
+function _errorNoCategory() {
+    $('.error-no-category').show();
+}
+
 
 
 // Table handling

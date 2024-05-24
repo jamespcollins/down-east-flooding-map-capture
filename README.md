@@ -16,7 +16,6 @@
     - findings in sidecar mode: have to use pencil (touch input doesn't work), line drawing ok, hard to hit some inputs, file downloads to computer (nice)
 - add place generator questions
 - look into selecting tools for road segments
-- check at least one category selected -- https://stackoverflow.com/a/30055382
 - use jQuery for DOM element creation
 - use better geocoder (Google?) -- https://chatgpt.com/share/6ed3205c-5910-4888-8cdd-067caa797da4
 - add uncertainty flag
