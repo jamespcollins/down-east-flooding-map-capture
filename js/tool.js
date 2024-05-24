@@ -62,7 +62,23 @@ var county = L.geoJSON(carteret_co,{
         "opacity": 0.65,
         "fillOpacity": 0
     }
-})
+});
+
+var county_roads = L.geoJSON(carteret_co_roads, {
+    style: {
+        "color": "#000000",
+        "weight": 1,
+        "opacity": 0.3
+    },
+    onEachFeature: (f, l) => {
+        if (f.properties.FULLNAME) {
+            l.bindTooltip(f.properties.FULLNAME, {
+                direction: 'center',
+                permanent: false
+            });
+        }
+    }
+});
 
 var defaultView = {
     center: [34.80675621590259, -76.5376809057703],
@@ -72,12 +88,15 @@ var defaultView = {
 var map = L.map('map',{
     center: defaultView.center,
     zoom: defaultView.zoom,
-    layers: [googleStreets]
+    layers: [county,googleStreets]
 });
 map.attributionControl.remove();
 map.zoomControl.remove()
 
-county.addTo(map);
+var overlays = {
+    "County Outline": county,
+    "Roads": county_roads
+}
 
 var baseMaps = {
     "Google Streets": googleStreets,
@@ -85,12 +104,13 @@ var baseMaps = {
     "Google Imagery": googleSat,
     "ESRI Topo": Esri_WorldTopoMap,
     "ESRI Imagery": Esri_WorldImagery,
-    "OpenStreetMap": osm,
-    "USGS Hybrid": USGS_USImageryTopo
+    // "OpenStreetMap": osm,
+    // "USGS Hybrid": USGS_USImageryTopo
 };
 
-var layerControl = L.control.layers(baseMaps)
-layerControl.options.position = "bottomright";
+var layerControl = L.control.layers(baseMaps,overlays,{
+    position: 'bottomright'
+});
 
 
 

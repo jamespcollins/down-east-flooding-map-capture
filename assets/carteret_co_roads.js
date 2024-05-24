@@ -1,4 +1,4 @@
-carteret_co_raods = {
+carteret_co_roads = {
 "type": "FeatureCollection",
 "name": "carteret_county_roads",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4269" } },
