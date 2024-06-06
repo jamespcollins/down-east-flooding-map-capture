@@ -935,7 +935,7 @@ var placeDescriptors = {
         featureTypes: ['circle','polyline']
     },
     7: {
-        prompt: "Looking through your list of places, what are the comparable alternatives for each place?",
+        prompt: "Looking through your list of places, are there comparable alternatives for each place?",
         onlyFlooding: false,
         singlePlace: false,
         featureTypes: ['circle']
