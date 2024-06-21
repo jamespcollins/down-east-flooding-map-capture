@@ -799,7 +799,7 @@ function _updatePlaceDescriptor() {
             }
 
             $('#place-descriptors h1').html(
-                d.prompt.replaceAll('{{place}}',labels[currentPlace].label + ` (${labels[currentPlace].categories})`)
+                d.prompt.replaceAll('{{place}}',labels[currentPlace].label) // + ` (${labels[currentPlace].categories})`)
             ).css('margin-bottom','0.2em');
             $('#place-descriptors > small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
 
@@ -928,7 +928,7 @@ var placeDescriptors = {
         featureTypes: ['circle','polyline']
     },
     6: {
-        prompt: `<br><h3>If <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> were flooding enough for you</h3><h3>to stop visiting <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> or use it differently than you do now...</h3>`+
+        prompt: `<br><h3>If <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> were flooding enough for you</h3><h3>to use <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> differently than you do now...</h3>`+
          `<h1>How deep would the water be? <br />What fraction would be covered by water? <br />How often would it be flooding?</h1>`,
         onlyFlooding: false,
         singlePlace: true,
