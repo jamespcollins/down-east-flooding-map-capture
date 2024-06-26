@@ -817,7 +817,7 @@ function _updatePlaceDescriptor() {
                 });
 
                 $('#next-step-btn').unbind('click').click((e) => {
-                    _nextPlace();
+                    _nextPlace(labelsToIterate.length);
                 });
             }
 
@@ -869,9 +869,9 @@ function _prevPlace() {
     }
 }
 
-function _nextPlace() {
+function _nextPlace(labelsToIterateLength) {
     // this will not apply other prompt-based filters...
-    if (currentPlace+2 < labels.length) {
+    if (currentPlace+2 < labelsToIterateLength) {
         currentPlace++;
         _updatePlaceDescriptor();
     } else {
@@ -963,7 +963,7 @@ var placeDescriptors = {
         featureTypes: ['circle']
     },
     7: {
-        prompt: `How often would these roads need to flooding for your to use them differently than you do now?`,
+        prompt: `How often would these roads need to flood for you to use them differently than you do now?`,
         onlyFlooding: false,
         singlePlace: false,
         featureTypes: ['polyline']
