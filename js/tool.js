@@ -11,6 +11,18 @@ function _oSize(o) {
     return(Object.keys(o).length);
 }
 
+// https://stackoverflow.com/a/16436975
+function _arraysEqual(a, b) {
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (a.length !== b.length) return false;
+
+    for (var i = 0; i < a.length; ++i) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
+}
+
 var respID = $.urlParam("r");
 var cache = $.urlParam("cache");
 
@@ -440,21 +452,27 @@ map.on('draw:editstop', function () {
 });
 
 var labels = [];
+var circleLabels = [];
 function updateLabelsTable(
     onlyFlooding = false, 
     featureTypes = false
 ) {
     labels = [];
+    circleLabels = [];
     drawnItems.eachLayer(function (layer) {
         if (layer.feature && layer.feature.properties.label) {
-            labels.push({
+            newLabel = {
                 id: layer.feature.properties.id,
                 label: layer.feature.properties.label,
                 layer: layer,
                 order: layer.feature.properties.order,
                 type: layer.feature.properties.type,
                 categories: layer.feature.properties.categoryLabels
-            });
+            };
+            labels.push(newLabel);
+            if (layer.feature.properties.type == 'circle') {
+                circleLabels.push(newLabel);
+            }
         }
     });
 
@@ -785,10 +803,15 @@ function _updatePlaceDescriptor() {
         d = placeDescriptors[placeDescriptorIndex];
 
         if (d.singlePlace) {
-            console.log('here1');
+            if (_arraysEqual(d.featureTypes,['circle'])) {
+                labelsToIterate = circleLabels;
+            } else {
+                labelsToIterate = labels;
+            }
+
             $('#labels-table').hide();
 
-            if (currentPlace == 0 && labels.length > 1) {
+            if (currentPlace == 0 && labelsToIterate.length > 1) {
                 $('#prev-step-btn').unbind('click').click((e) => {
                     _prevPlace();
                 });
@@ -799,13 +822,18 @@ function _updatePlaceDescriptor() {
             }
 
             $('#place-descriptors h1').html(
-                d.prompt.replaceAll('{{place}}',labels[currentPlace].label) // + ` (${labels[currentPlace].categories})`)
+                d.prompt.replaceAll('{{place}}',labelsToIterate[currentPlace].label + ` (${labelsToIterate[currentPlace].id})`) // + ` (${labels[currentPlace].categories})`)
             ).css('margin-bottom','0.2em');
             $('#place-descriptors > small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
 
+            map.fitBounds(labelsToIterate[currentPlace].layer.getBounds())
+
             return(true);
+        } else {
+            _toDefaultView();
         }
         
+
         // default behaviors
         $('#labels-table').show();
         currentPlace = 0;
@@ -905,12 +933,12 @@ var placeDescriptors = {
     },
     2: {
         prompt: "Which of these places are most affected by flooding?",
-        onlyFlooding: false,
+        onlyFlooding: true,
         singlePlace: false,
         featureTypes: ['circle','polyline']
     },
     3: {
-        prompt: "In the last year, how many weeks did you see flooding at each place?",
+        prompt: "How often does it flood at each place?",
         onlyFlooding: true,
         singlePlace: false,
         featureTypes: ['circle','polyline']
@@ -929,29 +957,35 @@ var placeDescriptors = {
     },
     6: {
         prompt: `<br><h3>If <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> were flooding enough for you</h3><h3>to use <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> differently than you do now...</h3>`+
-         `<h1>How deep would the water be? <br />What fraction would be covered by water? <br />How often would it be flooding?</h1>`,
+         `<h1>How deep would the water be? <br />Where would the water be? <br />How often would it be flooding?</h1>`,
         onlyFlooding: false,
         singlePlace: true,
-        featureTypes: ['circle','polyline']
+        featureTypes: ['circle']
     },
     7: {
+        prompt: `How often would these roads need to flooding for your to use them differently than you do now?`,
+        onlyFlooding: false,
+        singlePlace: false,
+        featureTypes: ['polyline']
+    },
+    8: {
         prompt: "Looking through your list of places, are there comparable alternatives for each place?",
         onlyFlooding: false,
         singlePlace: false,
         featureTypes: ['circle']
     },
-    8: {
+    9: {
         prompt: "If these places were too severely flooded, how long would you be willing to travel to a comparable, alternative place?",
         onlyFlooding: false,
         singlePlace: false,
         featureTypes: ['circle']
     },
-    9: {
-        prompt: "If your usual route were too severely flooded, how long would you be willing to travel on an alternate route?",
-        onlyFlooding: false,
-        singlePlace: false,
-        featureTypes: ['polyline']
-    },
+    // 9: {
+    //     prompt: "If your usual route were too severely flooded, how long would you be willing to travel on an alternate route?",
+    //     onlyFlooding: false,
+    //     singlePlace: false,
+    //     featureTypes: ['polyline']
+    // },
     10: {
         prompt: `<div class="alert-success rounded">Done</div>`,
         onlyFlooding: false,
