@@ -929,7 +929,7 @@ var placeDescriptors = {
         prompt: "At which of these places have you seen flooding?",
         onlyFlooding: false,
         singlePlace: false,
-        featureTypes: ['circle','polyline']
+        featureTypes: ['circle']
     },
     2: {
         prompt: "Which of these places are most affected by flooding?",
@@ -938,55 +938,55 @@ var placeDescriptors = {
         featureTypes: ['circle','polyline']
     },
     3: {
-        prompt: "How often does it flood at each place?",
+        prompt: "How often does it flood at these places?",
         onlyFlooding: true,
         singlePlace: false,
         featureTypes: ['circle','polyline']
     },
     4: {
-        prompt: "How does flooding at each place disrupt your day-to-day life, if at all?",
+        prompt: "How does flooding at these places disrupt your day-to-day life, if at all?",
         onlyFlooding: true,
         singlePlace: false,
         featureTypes: ['circle','polyline']
     },
     5: {
-        prompt: "How do you deal with flooding at each place?",
+        prompt: "How do you deal with flooding at these places?",
         onlyFlooding: true,
         singlePlace: false,
         featureTypes: ['circle','polyline']
     },
-    6: {
-        prompt: `<br><h3>If <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> were flooding enough for you</h3><h3>to use <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> differently than you do now...</h3>`+
-         `<h1>How deep would the water be? <br />Where would the water be? <br />How often would it be flooding?</h1>`,
-        onlyFlooding: false,
-        singlePlace: true,
-        featureTypes: ['circle']
-    },
-    7: {
-        prompt: `How often would these roads need to flood for you to use them differently than you do now?`,
-        onlyFlooding: false,
-        singlePlace: false,
-        featureTypes: ['polyline']
-    },
-    8: {
-        prompt: "Looking through your list of places, are there comparable alternatives for each place?",
-        onlyFlooding: false,
-        singlePlace: false,
-        featureTypes: ['circle']
-    },
-    9: {
-        prompt: "If these places were too severely flooded, how long would you be willing to travel to a comparable, alternative place?",
-        onlyFlooding: false,
-        singlePlace: false,
-        featureTypes: ['circle']
-    },
+    // 6: {
+    //     prompt: `<br><h3>If <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> were flooding enough for you</h3><h3>to use <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> differently than you do now...</h3>`+
+    //      `<h1>How deep would the water be? <br />Where would the water be? <br />How often would it be flooding?</h1>`,
+    //     onlyFlooding: false,
+    //     singlePlace: true,
+    //     featureTypes: ['circle']
+    // },
+    // 7: {
+    //     prompt: `How often would these roads need to flood for you to use them differently than you do now?`,
+    //     onlyFlooding: false,
+    //     singlePlace: false,
+    //     featureTypes: ['polyline']
+    // },
+    // 8: {
+    //     prompt: "Looking through your list of places, are there comparable alternatives for each place?",
+    //     onlyFlooding: false,
+    //     singlePlace: false,
+    //     featureTypes: ['circle']
+    // },
+    // 9: {
+    //     prompt: "If these places were too severely flooded, how long would you be willing to travel to a comparable, alternative place?",
+    //     onlyFlooding: false,
+    //     singlePlace: false,
+    //     featureTypes: ['circle']
+    // },
     // 9: {
     //     prompt: "If your usual route were too severely flooded, how long would you be willing to travel on an alternate route?",
     //     onlyFlooding: false,
     //     singlePlace: false,
     //     featureTypes: ['polyline']
     // },
-    10: {
+    6: {
         prompt: `<div class="alert-success rounded">Done</div>`,
         onlyFlooding: false,
         singlePlace: false,
@@ -1011,24 +1011,24 @@ var placeCategories = {
         label: "work or occupation"
     },
     4: {
-        tag: "street",
-        label: "local street"
-    },
-    5: {
-        tag: "majorroad",
-        label: "major road or bridge"
-    },
-    6: {
         tag: "goodssvcs",
         label: "groceries and services"
     },
-    7: {
+    5: {
         tag: "relax",
         label: "place to relax by self"
     },
-    8: {
+    6: {
         tag: "connect",
         label: "place to connect with others"
+    },
+    7: {
+        tag: "street",
+        label: "local street"
+    },
+    8: {
+        tag: "majorroad",
+        label: "major road or bridge"
     },
     9: {
         tag: "other",
