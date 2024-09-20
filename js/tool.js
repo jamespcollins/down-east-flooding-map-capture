@@ -1,4 +1,128 @@
-// Utils
+// --- TOOL PARAMETERS ---
+var MARKER_DIAMETER_METERS = 250; // Circle marker radius
+
+var REPEAT_MODE = false; // Whether to keep drawing feature drawing on after finishing a feature
+
+// Prompt config
+// - prompt (str): Text to display. Can accept HTML tags. If singlePlace: true, can use {{place}} variable to insert individual place name in prompt.
+// - onlyFlooding (bool): Only display features with a checked "flooding" checkbox.
+// - singlePlace (bool): Iterate through features individually. Recommended to use {{place}} variable in prompt.
+// - featureTypes (str array): Which feature geometries to show in prompt. Currently supports ['circle','polyline']. Names should match Leaflet.Draw geometry names.
+var PROMPTS = {
+    1: {
+        prompt: "At which of these places have you seen flooding?",
+        onlyFlooding: false,
+        singlePlace: false,
+        featureTypes: ['circle']
+    },
+    2: {
+        prompt: "Which of these places are most affected by flooding?",
+        onlyFlooding: true,
+        singlePlace: false,
+        featureTypes: ['circle','polyline']
+    },
+    3: {
+        prompt: "How often does it flood at these places?",
+        onlyFlooding: true,
+        singlePlace: false,
+        featureTypes: ['circle','polyline']
+    },
+    4: {
+        prompt: "How does flooding at these places disrupt your day-to-day life, if at all?",
+        onlyFlooding: true,
+        singlePlace: false,
+        featureTypes: ['circle','polyline']
+    },
+    5: {
+        prompt: "How do you deal with flooding at these places?",
+        onlyFlooding: true,
+        singlePlace: false,
+        featureTypes: ['circle','polyline']
+    },
+    // 6: {
+    //     prompt: `<br><h3>If <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> were flooding enough for you</h3><h3>to use <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> differently than you do now...</h3>`+
+    //      `<h1>How deep would the water be? <br />Where would the water be? <br />How often would it be flooding?</h1>`,
+    //     onlyFlooding: false,
+    //     singlePlace: true,
+    //     featureTypes: ['circle']
+    // },
+    // 7: {
+    //     prompt: `How often would these roads need to flood for you to use them differently than you do now?`,
+    //     onlyFlooding: false,
+    //     singlePlace: false,
+    //     featureTypes: ['polyline']
+    // },
+    // 8: {
+    //     prompt: "Looking through your list of places, are there comparable alternatives for each place?",
+    //     onlyFlooding: false,
+    //     singlePlace: false,
+    //     featureTypes: ['circle']
+    // },
+    // 9: {
+    //     prompt: "If these places were too severely flooded, how long would you be willing to travel to a comparable, alternative place?",
+    //     onlyFlooding: false,
+    //     singlePlace: false,
+    //     featureTypes: ['circle']
+    // },
+    // 9: {
+    //     prompt: "If your usual route were too severely flooded, how long would you be willing to travel on an alternate route?",
+    //     onlyFlooding: false,
+    //     singlePlace: false,
+    //     featureTypes: ['polyline']
+    // },
+    6: {
+        prompt: `<div class="alert-success rounded">Done</div>`,
+        onlyFlooding: false,
+        singlePlace: false,
+        featureTypes: ['circle','polyline']
+    }
+};
+
+// Feature category config
+// - tag (str): The internal category tag. Not shown to user. Output in GEOJSON.
+// - label (str): The display label. Shown to user. Not output in GEOJSON.
+var CATEGORIES = {
+    1: {
+        tag: "residence",
+        label: "primary residence"
+    },
+    2: {
+        tag: "property",
+        label: "other property"
+    },
+    3: {
+        tag: "work",
+        label: "work or occupation"
+    },
+    4: {
+        tag: "goodssvcs",
+        label: "groceries and services"
+    },
+    5: {
+        tag: "relax",
+        label: "place to relax by self"
+    },
+    6: {
+        tag: "connect",
+        label: "place to connect with others"
+    },
+    7: {
+        tag: "street",
+        label: "local street"
+    },
+    8: {
+        tag: "majorroad",
+        label: "major road or bridge"
+    },
+    9: {
+        tag: "other",
+        label: "other place of concern"
+    }
+}
+
+
+// --- UTILITIES ---
+// Fetch URL query parameters
 $.urlParam = function(name){
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
     if (results==null) {
@@ -7,10 +131,18 @@ $.urlParam = function(name){
     return decodeURI(results[1]) || 0;
 }
 
+// URL parameter: respondent ID
+var respID = $.urlParam("r");
+
+// URL parameter: cache
+var cache = $.urlParam("cache");
+
+// JS objecct size
 function _oSize(o) {
     return(Object.keys(o).length);
 }
 
+// Check if arrays contain the same items
 // https://stackoverflow.com/a/16436975
 function _arraysEqual(a, b) {
     if (a === b) return true;
@@ -23,50 +155,48 @@ function _arraysEqual(a, b) {
     return true;
 }
 
-var respID = $.urlParam("r");
-var cache = $.urlParam("cache");
-
-
-
-// Basemaps
+// --- BASEMAPS ---
 // https://gis.stackexchange.com/a/341490
-googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
+var bm_googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
     maxZoom: 20,
     subdomains:['mt0','mt1','mt2','mt3'],
     useCache: true,
-    // useOnlyCache: true,
+    useOnlyCache: false,
 	crossOrigin: true,
     cacheMaxAge: 2.6298e+9 // 1 month
 });
-googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
-    maxZoom: 20,
-    subdomains:['mt0','mt1','mt2','mt3']
-});
-googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+
+var bm_googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
     maxZoom: 20,
     subdomains:['mt0','mt1','mt2','mt3']
 });
 
-var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+var bm_googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+    maxZoom: 20,
+    subdomains:['mt0','mt1','mt2','mt3']
+});
+
+var bm_osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     // maxZoom: 18,
 });
 
-var Esri_WorldTopoMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+var bm_Esri_WorldTopoMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
     // attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
 });
 
-var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+var bm_Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     // attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
 });
 
-var USGS_USImageryTopo = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}', {
+var bm_USGS_USImageryTopo = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 20,
     attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
 });
 
 
 
-// Map
+// --- CUSTOM MAP LAYERS (OVERLAYS) ---
+// localization -- update with relevant AOI and roads GEOJSON
 var county = L.geoJSON(carteret_co,{
     style: {
         "color": "#ff7800",
@@ -91,46 +221,56 @@ var county_roads = L.geoJSON(carteret_co_roads, {
         }
     }
 });
-carteret_co_roads = undefined; // unset
+carteret_co_roads = undefined; // unset to unload large GEOJSON object
 
+
+// --- MAP ---
+// Default map view -- localization -- update default map view
 var defaultView = {
     center: [34.80675621590259, -76.5376809057703],
     zoom: 11
 };
 
+// Initialize Leaflet map
 var map = L.map('map',{
     center: defaultView.center,
     zoom: defaultView.zoom,
-    layers: [county,googleStreets]
+    layers: [county,bm_googleStreets] // initial layers and basemap
 });
+
+// Remove unneeded default controls
 map.attributionControl.remove();
 map.zoomControl.remove()
 
+
+// Layer control
+// Overlays -- localization -- replace with relevant AOI and road feature set
 var overlays = {
     "County Outline": county,
     "Roads": county_roads
 }
 
+// Basemaps
 var baseMaps = {
-    "Google Streets": googleStreets,
-    "Google Hybrid": googleHybrid,
-    "Google Imagery": googleSat,
-    "ESRI Topo": Esri_WorldTopoMap,
-    "ESRI Imagery": Esri_WorldImagery,
-    // "OpenStreetMap": osm,
-    // "USGS Hybrid": USGS_USImageryTopo
+    "Google Streets": bm_googleStreets,
+    "Google Hybrid": bm_googleHybrid,
+    "Google Imagery": bm_googleSat,
+    "ESRI Topo": bm_Esri_WorldTopoMap,
+    "ESRI Imagery": bm_Esri_WorldImagery,
+    // "OpenStreetMap": bm_osm,
+    // "USGS Hybrid": bm_USGS_USImageryTopo
 };
 
+// Initialize layer control
 var layerControl = L.control.layers(baseMaps,overlays,{
     position: 'bottomright'
 });
 
-
-
-// Roads search
+// Roads search (search within supplied feature set)
+// Initialize search control
 var searchControl = new L.Control.Search({
     layer: county_roads,
-    propertyName: 'FULLNAME',
+    propertyName: 'FULLNAME', // Feature attribute/property to search over
     marker: false,
     moveToLocation: function (latlng, title, map) {
         var zoom = map.getBoundsZoom(latlng.layer.getBounds());
@@ -138,34 +278,111 @@ var searchControl = new L.Control.Search({
     }
 });
 
+// Search control on location found event handler
 searchControl.on('search:locationfound', (e) => {
+    // style matched feature
     e.layer.setStyle({ 
         color: '#ffff1c', 
         weight: 3, 
         opacity: 0.9 
     });
+
+    // label matched feature
     if (e.layer.feature.properties.FULLNAME) {
         e.layer.bindTooltip(e.layer.feature.properties.FULLNAME, {
             permanent: true
         }).openTooltip();
     }
-}).on('search:collapsed', (e) => {
+});
+
+// Search control on searchbox collapse event handler
+searchControl.on('search:collapsed', (e) => {
+    // reset all road layers to hidden
     county_roads.eachLayer((l) => {
         county_roads.resetStyle(l);
         l.unbindTooltip();
     });
 });
 
+// Add search control
 map.addControl(searchControl);
 
 
+// Geocoder control
+var geocode_layers = [];
 
-// Tile cache
+var geocoder = L.Control.geocoder({
+    defaultMarkGeocode: false,
+    geocoder: new L.Control.Geocoder.nominatim({
+        geocodingQueryParams: {
+            viewbox: '-76,35,-77,34', // localization - update geocoder search bounds
+            bounded: 1
+        }
+    }),
+    position: 'bottomright',
+    collapsed: true
+}).on('markgeocode', function(e) {
+    _removeGeocodeLayers();
+    var bbox = e.geocode.bbox;
+    var poly = L.polygon([
+        bbox.getSouthEast(),
+        bbox.getNorthEast(),
+        bbox.getNorthWest(),
+        bbox.getSouthWest()
+    ]).addTo(map);
+    map.fitBounds(poly.getBounds());
+    map.setZoom(map.getZoom() - 1);
+    geocode_layers.push(poly);
+}).addTo(map);
+
+function _removeGeocodeLayers() {
+    geocode_layers.forEach((l) => {l.remove()});
+}
+
+layerControl.addTo(map);
+$('.leaflet-control-geocoder-icon').css('background-image','none').text('📍');
+
+function _toDefaultView() {
+    map.setView(defaultView.center, defaultView.zoom);
+}
+
+
+// Custom control to reset map view
+var resetControl = L.Control.extend({
+    options: {
+        position: 'topleft'
+    },
+
+    onAdd: function(map) {
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        container.style.backgroundColor = 'white';     
+        container.style.width = '30px';
+        container.style.height = '30px';
+        container.style.cursor = 'pointer';
+        container.style.textAlign = 'center';
+        container.style.lineHeight = '24px';
+        container.style.fontSize = '1.7em';
+        container.title = 'Reset map view';
+        container.innerHTML = '&#x21bb;'; // Reset icon (you can customize this)
+
+        container.onclick = function() {
+            _toDefaultView();
+        };
+
+        return container;
+    }
+});
+// map.addControl(new resetControl());
+
+// Basemap tile caching
+// Note: currently only implemented for googleStreets basemap. 
+// Caching status vars
 var totalToCache = 0;
 var remainingToCache = 0;
 var initialCache = false;
 
-googleStreets.on('seedstart',(e)=>{
+// Disable map on cache seed start
+bm_googleStreets.on('seedstart',(e)=>{
     totalToCache = e.queueLength;
 
     if (initialCache) {
@@ -178,13 +395,15 @@ googleStreets.on('seedstart',(e)=>{
     console.log(`caching tiles at zoom level ${cache} with queue length ${e.queueLength}...`);
 });
 
-googleStreets.on('seedprogress',(e)=>{
+// Update cache progress indicator
+bm_googleStreets.on('seedprogress',(e)=>{
     remainingToCache = e.remainingLength;
     perc = Math.round((totalToCache - remainingToCache)/totalToCache*100);
     $('#cache-bar').removeClass('bg-success bg-warning').addClass('bg-danger').css('width',perc+'%').attr('aria-valuenow',perc)[0].innerHTML = `${perc}% cached (${remainingToCache} to go)`
 });
 
-googleStreets.on('seedend',(e)=>{
+// Enable map on cache seed end
+bm_googleStreets.on('seedend',(e)=>{
     initialCache = false;
 
     console.log(`finished seeding cache.`);
@@ -202,12 +421,14 @@ googleStreets.on('seedend',(e)=>{
     map._container.style.opacity = 1;
 });
 
-googleStreets.on('tilecachemiss',(e)=>{
+// Update cache indictor if cache is missing in map extent
+bm_googleStreets.on('tilecachemiss',(e)=>{
     // console.log(`cache miss`);
     $('#cache-bar').addClass('bg-success').removeClass('bg-danger').css('opacity',0.8)[0].innerHTML = `Cache missing`;
 });
 
-googleStreets.on('tilecachehit',(e)=>{
+// Update cache indicator if cache is complete in map extent
+bm_googleStreets.on('tilecachehit',(e)=>{
     if (remainingToCache <= 1) {
         $('#cache-bar').removeClass('bg-danger bg-warning').addClass('bg-success').css('opacity',1)[0].innerHTML = `Cached`;
     } else {
@@ -216,29 +437,37 @@ googleStreets.on('tilecachehit',(e)=>{
     }
 });
 
+// If cache URL parameter set (for initial full extent caching)
 if (cache > 0) {
     initialCache = true;
-    googleStreets.seed(county.getBounds(),10, cache);
+    bm_googleStreets.seed(county.getBounds(),10, cache);
 }
 
+// Caching indicator click event handler
 $('.cache-status').on('click', ()=>{
-    googleStreets._db.info().then(function (r) {
+    // Display stats
+    bm_googleStreets._db.info().then(function (r) {
         alert(`Tile cache file count: ${r.doc_count} \nTiles attempting to cache: ${totalToCache} \nTiles remaining to cache: ${remainingToCache}`);
-    }).catch(function (err) {
+    }).catch((err) => {
         console.log(err);
     });
 });
 
 
-
-// Draw handling
+// --- FEATURE DRAWING ---
+// Feature group to store all drawn features
 var drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
 
+// Ascending feature ID counter
+var idCounter = 0;
+
+// Initialize draw control
 var drawControl = new L.Control.Draw({
     edit: {
         featureGroup: drawnItems
     },
+    // Enable additional feature geometries here
     draw: {
         polygon: false,
         polyline: {
@@ -260,6 +489,7 @@ var drawControl = new L.Control.Draw({
 });
 map.addControl(drawControl);
 
+// Define clicked (flooding) feature style
 var clickStyle =  {
     fillColor: "#337ab7",
     color: "#337ab7",
@@ -268,6 +498,7 @@ var clickStyle =  {
     fillOpacity: 0.2,
 }
 
+// Define unclicked (not flooding/default) feature style
 var unclickStyle = {
     fillColor: "#ff0000",
     color: "#ff0000",
@@ -276,6 +507,7 @@ var unclickStyle = {
     fillOpacity: 0.2,
 }
 
+// Feature click handler (toggles style and feature property)
 function clickOnMarker(e){
     if (e.target.feature.properties.clicked) {
         e.target.setStyle(unclickStyle);
@@ -287,32 +519,30 @@ function clickOnMarker(e){
     updateLabelsTable();
 }
 
-var idCounter = 0;
 
-
-
-// Modal handling
-var modal = $('#labelModal');
-var modalEdit = $('#labelModalEdit');
-var modalRespID = $('#respondentIDModal');
+// --- MODAL FORMS ---
+// Define vars
+var modal = $('#labelModal'); // new feature create modal
+var modalEdit = $('#labelModalEdit'); // feature edit modal
+var modalRespID = $('#respondentIDModal'); // respondent ID modal
 var currentLayer = null;
 var currentLayerType = null;
 
+// WWhen new feature created
 map.on('draw:created', function (e) {
     idCounter++;
-    var layer = e.layer;
-    // if (e.layerType === 'circle') {
-    currentLayer = layer; // Store the layer
+    currentLayer = e.layer; // Store the layer
     currentLayerType = e.layerType; // Store the layer type
     modal.modal('show'); // Show the modal using Bootstrap
-    // }
 });
 
-modal.on('show.bs.modal', function (e) {
+// Empty the new feature modal label text box on show
+modal.on('show.bs.modal', (e) => {
     document.getElementById("circleLabel").value = "";
 });
 
-$(".modal").on('shown.bs.modal', function (e) {
+// On all modals, focus on the .focus-input element and hide errors
+$(".modal").on('shown.bs.modal', (e) => {
     $(e.target.getElementsByClassName('focus-input')).focus()
 }).on('show.bs.modal',()=>{
     $('.error').hide();
@@ -320,16 +550,19 @@ $(".modal").on('shown.bs.modal', function (e) {
     $('.error').hide();
 });
 
+// Reset the new feature modal on hide
 modal.on('hidden.bs.modal', function () {
     currentLayer = null; // Reset the current layer when the modal is hidden
     currentLayerType = null;
     _clearCategoryCheckboxes()
 });
 
+// Resert the edit feature modal on hide
 modalEdit.on('hidden.bs.modal', function () {
     _clearCategoryCheckboxes()
 });
 
+// Respondent ID modal form handler
 $('#respondentIDForm').on('submit', (e) => {
     e.preventDefault();
     respID = document.getElementById("respondentIDInput").value;
@@ -338,13 +571,14 @@ $('#respondentIDForm').on('submit', (e) => {
 });
 modalRespID.modal('show');
 
+// New feature model form handler
 $('#labelForm').on('submit', function (event) {
     event.preventDefault();
 
     var label = document.getElementById("circleLabel").value;
     var categories = [];
 
-    $.each(placeCategories, (i,o) => {
+    $.each(CATEGORIES, (i,o) => {
         cb = $('#check-' + o.tag + '-initial')[0];
         if (cb.checked) {
             categories.push(o.tag);
@@ -382,6 +616,7 @@ $('#labelForm').on('submit', function (event) {
     modal.modal('hide'); // Hide the modal using Bootstrap
 });
 
+// Set up the edit modal on open
 function openEditModal(layer) {
     modalEdit.modal('show');
 
@@ -402,7 +637,7 @@ function openEditModal(layer) {
         var label = document.getElementById('circleLabelEdit').value;
         var categories = [];
 
-        $.each(placeCategories, (i,o) => {
+        $.each(CATEGORIES, (i,o) => {
             cb = $('#check-' + o.tag + "-edit")[0];
             if (cb.checked) {
                 categories.push(o.tag);
@@ -424,42 +659,46 @@ function openEditModal(layer) {
 }
 
 
-
-// Category handling
+// Modal form category handling
+// Create comma-separated category label list for feature
 function _makeCategoryLabels(categoryArray) {
     noCats = categoryArray.length;
     catCt = 1;
     cats = '';
     categoryArray.forEach((o) => {
-        cats += placeCategoriesLookUp[o];
+        cats += CATEGORIESLookUp[o];
         if (catCt < noCats) {cats += ', '}
         catCt++;
     });
     return(cats);
 }
 
+// Show no category selected error
 function _errorNoCategory() {
     $('.error-no-category').show();
 }
 
 
-
-// Table handling
-map.on('draw:editstop', function () {
+// --- FEATURE TABLE ---
+// Update table after editing or deleting features
+map.on('draw:editstop', () => {
     updateLabelsTable();
-}).on('draw:deletestop', function () {
+}).on('draw:deletestop', () => {
     updateLabelsTable();
 });
 
+// Utility vars
 var labels = [];
 var circleLabels = [];
+
+// Table updater
 function updateLabelsTable(
-    onlyFlooding = false, 
-    featureTypes = false
+    onlyFlooding = false, // apply prompt-based filters
+    featureTypes = false 
 ) {
     labels = [];
     circleLabels = [];
-    drawnItems.eachLayer(function (layer) {
+    drawnItems.eachLayer((layer) => {
         if (layer.feature && layer.feature.properties.label) {
             newLabel = {
                 id: layer.feature.properties.id,
@@ -482,7 +721,7 @@ function updateLabelsTable(
     var tableBody = document.querySelector('#labels-table tbody');
     tableBody.innerHTML = '';
 
-    labels.forEach(function (item) {
+    labels.forEach((item) => {
         // check if only flooding
         if (onlyFlooding && !item.layer.feature.properties.clicked) {
             return(false);
@@ -589,8 +828,7 @@ function updateLabelsTable(
 }
 
 
-
-// Export handling
+// --- GEOJSON EXPORT ---
 function exportList(verify) {
     if (drawnItems.getLayers().length == 0) {return false}
 
@@ -631,78 +869,7 @@ window.onbeforeunload = function() {
 };
 
 
-
-// Geocoder control
-var geocode_layers = [];
-
-var geocoder = L.Control.geocoder({
-    defaultMarkGeocode: false,
-    geocoder: new L.Control.Geocoder.nominatim({
-        geocodingQueryParams: {
-            viewbox: '-76,35,-77,34',
-            bounded: 1
-        }
-    }),
-    position: 'bottomright',
-    collapsed: true
-}).on('markgeocode', function(e) {
-    _removeGeocodeLayers();
-    var bbox = e.geocode.bbox;
-    var poly = L.polygon([
-        bbox.getSouthEast(),
-        bbox.getNorthEast(),
-        bbox.getNorthWest(),
-        bbox.getSouthWest()
-    ]).addTo(map);
-    map.fitBounds(poly.getBounds());
-    map.setZoom(map.getZoom() - 1);
-    geocode_layers.push(poly);
-}).addTo(map);
-
-function _removeGeocodeLayers() {
-    geocode_layers.forEach((l) => {l.remove()});
-}
-
-layerControl.addTo(map);
-$('.leaflet-control-geocoder-icon').css('background-image','none').text('📍');
-
-function _toDefaultView() {
-    map.setView(defaultView.center, defaultView.zoom);
-}
-
-
-
-// Custom control to reset map view
-var resetControl = L.Control.extend({
-    options: {
-        position: 'topleft'
-    },
-
-    onAdd: function(map) {
-        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-        container.style.backgroundColor = 'white';     
-        container.style.width = '30px';
-        container.style.height = '30px';
-        container.style.cursor = 'pointer';
-        container.style.textAlign = 'center';
-        container.style.lineHeight = '24px';
-        container.style.fontSize = '1.7em';
-        container.title = 'Reset map view';
-        container.innerHTML = '&#x21bb;'; // Reset icon (you can customize this)
-
-        container.onclick = function() {
-            _toDefaultView();
-        };
-
-        return container;
-    }
-});
-
-// map.addControl(new resetControl());
-
-
-
-// Hotkeys
+// --- HOTKEYS ---
 Mousetrap.bind(['r','esc'], function(e) {
     _toDefaultView();
     _removeGeocodeLayers();
@@ -737,17 +904,14 @@ Mousetrap.bind(['t'], function(e) {
 });
 
 
-
-// Help
+// --- HELP MODAL ---
 $("#help").click((e) => {
     $('#helpModal').modal('show');
 });
-// show on start
-// $('#helpModal').modal('show');
+// $('#helpModal').modal('show'); // show on start
 
 
-
-// Step handler
+// --- STEP HANDLER ---
 var stepView = 1;
 
 function _prevStepBtnDefault() {
@@ -764,6 +928,7 @@ function _nextStepBtnDefault() {
 }
 _nextStepBtnDefault();
 
+// Define the step 1 (list and map places) view
 function _step1View() {
     if (stepView == 1) {return false}
     stepView = 1;
@@ -779,9 +944,10 @@ function _step1View() {
         $('#next-step-btn').removeAttr('hidden');
     }, 400);
     updateLabelsTable();
-    placeDescriptorIndex = 1;   
+    promptIndex = 1;   
 }
 
+// Define the step 2 (describe places with prompts) view
 function _step2View() {
     if (stepView == 2) {return false}
     stepView = 2;
@@ -798,9 +964,10 @@ function _step2View() {
     updateLabelsTable();
 }
 
+// Update the prompt
 function _updatePlaceDescriptor() {
     if (stepView == 2) {
-        d = placeDescriptors[placeDescriptorIndex];
+        d = PROMPTS[promptIndex];
 
         if (d.singlePlace) {
             if (_arraysEqual(d.featureTypes,['circle'])) {
@@ -824,7 +991,7 @@ function _updatePlaceDescriptor() {
             $('#place-descriptors h1').html(
                 d.prompt.replaceAll('{{place}}',labelsToIterate[currentPlace].label + ` (${labelsToIterate[currentPlace].id})`) // + ` (${labels[currentPlace].categories})`)
             ).css('margin-bottom','0.2em');
-            $('#place-descriptors > small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
+            $('#place-descriptors > small').text("(" + promptIndex + "/" + _oSize(PROMPTS) + ")").css('margin-bottom','0.4em');
 
             map.fitBounds(labelsToIterate[currentPlace].layer.getBounds())
 
@@ -841,7 +1008,7 @@ function _updatePlaceDescriptor() {
         _nextStepBtnDefault();
 
         $('#place-descriptors h1').html(d.prompt).css('margin-bottom','0.2em');
-        $('#place-descriptors > small').text("(" + placeDescriptorIndex + "/" + _oSize(placeDescriptors) + ")").css('margin-bottom','0.4em');
+        $('#place-descriptors > small').text("(" + promptIndex + "/" + _oSize(PROMPTS) + ")").css('margin-bottom','0.4em');
         updateLabelsTable(
             onlyFlooding = d.onlyFlooding, 
             featureTypes = d.featureTypes
@@ -884,36 +1051,35 @@ function _nextPlace(labelsToIterateLength) {
 
 // Prev button handler
 function _updatePrevStep() {
-    if (placeDescriptorIndex == 1) {
+    if (promptIndex == 1) {
         // go to step 1 view
         return(_step1View());
     } else {
         // decrement place descriptor
-        placeDescriptorIndex--;
+        promptIndex--;
         _updatePlaceDescriptor();
         $('#next-step-btn').removeAttr('hidden');
         $('#export-btn').attr('hidden','hidden');
     }
 }
-
 
 
 // Next button handler
 function _updateNextStep() {
     if (stepView == 1) {
         // go to step 2 view
-        placeDescriptorIndex = 1;
+        promptIndex = 1;
         return(_step2View());
     }
-    else if (_oSize(placeDescriptors) - 1 == placeDescriptorIndex) {
+    else if (_oSize(PROMPTS) - 1 == promptIndex) {
         // export button show
-        placeDescriptorIndex++;
+        promptIndex++;
         _updatePlaceDescriptor();
         $('#export-btn').removeAttr('hidden');
         $('#next-step-btn').attr('hidden','hidden');
     } else {
         // increment place descriptor
-        placeDescriptorIndex++;
+        promptIndex++;
         _updatePlaceDescriptor();
         $('#next-step-btn').removeAttr('hidden');
         $('#export-btn').attr('hidden','hidden');
@@ -921,125 +1087,12 @@ function _updateNextStep() {
 }
 
 
-
 // Place descriptor handlers
-var placeDescriptorIndex = 1;
-var placeDescriptors = {
-    1: {
-        prompt: "At which of these places have you seen flooding?",
-        onlyFlooding: false,
-        singlePlace: false,
-        featureTypes: ['circle']
-    },
-    2: {
-        prompt: "Which of these places are most affected by flooding?",
-        onlyFlooding: true,
-        singlePlace: false,
-        featureTypes: ['circle','polyline']
-    },
-    3: {
-        prompt: "How often does it flood at these places?",
-        onlyFlooding: true,
-        singlePlace: false,
-        featureTypes: ['circle','polyline']
-    },
-    4: {
-        prompt: "How does flooding at these places disrupt your day-to-day life, if at all?",
-        onlyFlooding: true,
-        singlePlace: false,
-        featureTypes: ['circle','polyline']
-    },
-    5: {
-        prompt: "How do you deal with flooding at these places?",
-        onlyFlooding: true,
-        singlePlace: false,
-        featureTypes: ['circle','polyline']
-    },
-    // 6: {
-    //     prompt: `<br><h3>If <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> were flooding enough for you</h3><h3>to use <div class="alert-info p-2 d-inline-block rounded border border-info">{{place}}</div> differently than you do now...</h3>`+
-    //      `<h1>How deep would the water be? <br />Where would the water be? <br />How often would it be flooding?</h1>`,
-    //     onlyFlooding: false,
-    //     singlePlace: true,
-    //     featureTypes: ['circle']
-    // },
-    // 7: {
-    //     prompt: `How often would these roads need to flood for you to use them differently than you do now?`,
-    //     onlyFlooding: false,
-    //     singlePlace: false,
-    //     featureTypes: ['polyline']
-    // },
-    // 8: {
-    //     prompt: "Looking through your list of places, are there comparable alternatives for each place?",
-    //     onlyFlooding: false,
-    //     singlePlace: false,
-    //     featureTypes: ['circle']
-    // },
-    // 9: {
-    //     prompt: "If these places were too severely flooded, how long would you be willing to travel to a comparable, alternative place?",
-    //     onlyFlooding: false,
-    //     singlePlace: false,
-    //     featureTypes: ['circle']
-    // },
-    // 9: {
-    //     prompt: "If your usual route were too severely flooded, how long would you be willing to travel on an alternate route?",
-    //     onlyFlooding: false,
-    //     singlePlace: false,
-    //     featureTypes: ['polyline']
-    // },
-    6: {
-        prompt: `<div class="alert-success rounded">Done</div>`,
-        onlyFlooding: false,
-        singlePlace: false,
-        featureTypes: ['circle','polyline']
-    }
-};
+var promptIndex = 1;
+var CATEGORIESLookUp = {}
 
-
-
-// Category handling
-var placeCategories = {
-    1: {
-        tag: "residence",
-        label: "primary residence"
-    },
-    2: {
-        tag: "property",
-        label: "other property"
-    },
-    3: {
-        tag: "work",
-        label: "work or occupation"
-    },
-    4: {
-        tag: "goodssvcs",
-        label: "groceries and services"
-    },
-    5: {
-        tag: "relax",
-        label: "place to relax by self"
-    },
-    6: {
-        tag: "connect",
-        label: "place to connect with others"
-    },
-    7: {
-        tag: "street",
-        label: "local street"
-    },
-    8: {
-        tag: "majorroad",
-        label: "major road or bridge"
-    },
-    9: {
-        tag: "other",
-        label: "other place of concern"
-    }
-}
-
-var placeCategoriesLookUp = {}
-
-$.each(placeCategories, (i,e) => {
-    placeCategoriesLookUp[e.tag] = e.label;
+$.each(CATEGORIES, (i,e) => {
+    CATEGORIESLookUp[e.tag] = e.label;
     ['initial','edit'].forEach((o) => {
         temp = `
         <div class="form-check">
