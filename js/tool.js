@@ -386,7 +386,7 @@ bm_googleStreets.on('seedstart',(e)=>{
     totalToCache = e.queueLength;
 
     if (initialCache) {
-        map.fitBounds(county.getBounds());
+        // map.fitBounds(county.getBounds());
         map.dragging.disable();
         map.scrollWheelZoom.disable();
         map._container.style.opacity = 0.5;
@@ -440,7 +440,7 @@ bm_googleStreets.on('tilecachehit',(e)=>{
 // If cache URL parameter set (for initial full extent caching)
 if (cache > 0) {
     initialCache = true;
-    bm_googleStreets.seed(county.getBounds(),10, cache);
+    bm_googleStreets.seed(map.getBounds(),10, cache);
 }
 
 // Caching indicator click event handler
