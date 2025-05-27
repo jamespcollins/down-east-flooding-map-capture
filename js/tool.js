@@ -28,7 +28,7 @@ var PROMPTS = {
         featureTypes: ['circle','polyline']
     },
     4: {
-        prompt: "How does flooding at these places disrupt your day-to-day life, if at all?",
+        prompt: "How does flooding at these places disrupt your day, if at all?",
         onlyFlooding: true,
         singlePlace: false,
         featureTypes: ['circle','polyline']
